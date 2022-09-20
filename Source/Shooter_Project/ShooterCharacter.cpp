@@ -4,6 +4,7 @@
 #include "ShooterCharacter.h"
 #include "Containers/UnrealString.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
 
 // Sets default values
 AShooterCharacter::AShooterCharacter()
@@ -21,6 +22,16 @@ AShooterCharacter::AShooterCharacter()
 	//вращает рычаг, основываясь на вращении контроллера
 	//Rotate the arm based on the controller
 	CameraBoom->bUsePawnControlRotation = true;
+
+	//создание следующей камеры
+	//Create a follow camera
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	// Прикрепление камеры к концу рычага
+	// Attach camera to end of boom
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	//Камера не вращается относительно рычага
+	//Camera does not rotate relative to arm
+	FollowCamera->bUsePawnControlRotation = false;
 }
 
 // Called when the game starts or when spawned
