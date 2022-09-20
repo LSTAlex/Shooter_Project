@@ -19,6 +19,13 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	//Вызывается для ввода вперёд/назад
+	//Called for forwards/backwards input
+	void MoveForward(float Value);
+
+	//Вызывается для ввода в бок
+	//Called for side to side input
+	void MoveRight(float Value);
 
 public:	
 	// Called every frame
