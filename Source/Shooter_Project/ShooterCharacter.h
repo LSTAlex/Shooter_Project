@@ -80,6 +80,11 @@ private:
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	class UParticleSystem* MuzzelFlash;
 
+	//монтаж для стрельбы из оружия
+	//Montage for firing the weapon
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	class UAnimMontage* HipFireMontage;
+
 public:
 
 	//Возвращает субобъект CameraBoom
