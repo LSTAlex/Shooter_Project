@@ -85,6 +85,11 @@ private:
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	class UAnimMontage* HipFireMontage;
 
+	//частицы, призываемые при попадании пули
+	//Particles spawned upon bullet impact
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* ImpactParticles;
+
 public:
 
 	//Возвращает субобъект CameraBoom
