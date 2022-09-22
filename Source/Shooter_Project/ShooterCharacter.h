@@ -27,6 +27,16 @@ protected:
 	//Called for side to side input
 	void MoveRight(float Value);
 
+	//вызывается посредством ввода для вращения с заданной скоростью
+	//Called via input to turn at a given rate
+	//@param Rate this is a normalized rate. 1 = 100% of disired turn rate
+	void TurnAtRate(float Rate);
+
+	//вызывается посредством ввода для поворота камеры вверх/вниз с заданной скоростью
+	//Called via input to look up/down at a given rate
+	//@param Rate this is a normalized rate. 1 = 100% of disired turn rate
+	void LookUpAtRate(float Rate);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -44,6 +54,17 @@ private:
 	//Camera that follows the character
 	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
+
+	//Базовое значение для поворота в градусах/сек
+	//Base turn rate, in deg/sec.
+	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	float BaseTurnRate;
+
+	//Базовое значение для взгляда вверх/вниз в градусах/сек
+	//Base look up/down rate, in deg/sec.
+	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	float BaseLookUpRate;
 
 public:
 
