@@ -31,6 +31,7 @@ AShooterCharacter::AShooterCharacter():
 	//вращает рычаг, основываясь на вращении контроллера
 	//Rotate the arm based on the controller
 	CameraBoom->bUsePawnControlRotation = true;
+	CameraBoom->SocketOffset = FVector(0.f, 50.f, 50.f);
 
 	//создание следующей камеры
 	//Create a follow camera
@@ -45,12 +46,12 @@ AShooterCharacter::AShooterCharacter():
 	//не вращается при вращении контроллера
 	//don't rotate when the controller rotates.
 	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
+	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
 
 	//настройка движения персонажа
 	//Configurate character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f);//скорость вращения
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
