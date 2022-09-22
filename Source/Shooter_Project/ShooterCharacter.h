@@ -36,6 +36,10 @@ protected:
 	//Called via input to look up/down at a given rate
 	//@param Rate this is a normalized rate. 1 = 100% of disired turn rate
 	void LookUpAtRate(float Rate);
+	
+	//вызывается, когда нажата кнопка стрельбы
+	//called when the Fire Button is pressed
+	void FireWeapon();
 
 public:	
 	// Called every frame
