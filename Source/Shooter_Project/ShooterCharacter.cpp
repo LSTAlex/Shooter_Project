@@ -120,6 +120,80 @@ void AShooterCharacter::FireWeapon()
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzelFlash, SocketTransform);
 		}
 
+		//получение текущего размера Viewport
+		//get current size of the Viewport
+		FVector2D ViewPortSize;
+		if (GEngine && GEngine->GameViewport)
+		{
+			GEngine->GameViewport->GetViewportSize(ViewPortSize);
+		}
+
+		//Местоположение перекрестия в экранном пространстве
+		//Get screen space location of crosshairs
+		FVector2D CrosshairLocation(ViewPortSize.X / 2.f, ViewPortSize.Y / 2.f);
+		CrosshairLocation.Y -= 50.f;
+		FVector CrosshairWorldPosition;
+		FVector CrosshairWorldDirection;
+
+		//Получение мирового положения и направления для перекрестия
+		//Get world position and direction of crosshair
+		bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this,0),
+			CrosshairLocation,
+			CrosshairWorldPosition,
+			CrosshairWorldDirection);
+
+		//была ли дипроекция успешна
+		//was deprojection successful
+		if (bScreenToWorld)
+		{
+			FHitResult ScreenTraceHit;
+			const FVector Start{ CrosshairWorldPosition };
+			const FVector End{ CrosshairWorldPosition + CrosshairWorldDirection * 50'000.f};
+
+			//установление конечной точки дымного следа как конечная точка трассировки
+			//Set beam end point to line trace end pint
+			FVector BeamEndPoint{ End };
+
+			//трассировка вперед от мирового положения перекрестия
+			//Trace outward from crosshairs world location
+			GetWorld()->LineTraceSingleByChannel(
+				ScreenTraceHit, 
+				Start, 
+				End, 
+				ECollisionChannel::ECC_Visibility);
+
+			//было ли попадание трассировки
+			//was there a trace hit
+			if (ScreenTraceHit.bBlockingHit)
+			{
+				//конечная точка дымного следа - местоположение попадания трассировки
+				//Beam end point is now trace hit location
+				BeamEndPoint = ScreenTraceHit.Location;
+				if (ImpactParticles)
+				{
+					UGameplayStatics::SpawnEmitterAtLocation(
+						GetWorld(),
+						ImpactParticles,
+						ScreenTraceHit.Location
+					);
+				}
+			}
+			//Существуют ли частицы дымного следа
+			//Are smoke trail particles creatures
+			if (BeamParticles)
+			{
+				UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
+					GetWorld(),
+					BeamParticles,
+					SocketTransform);
+				if (Beam)
+				{
+					Beam->SetVectorParameter(FName("Target"), BeamEndPoint);
+				}
+			}
+		}
+
+		/*
 		FHitResult FireHit;
 		const FVector Start{ SocketTransform.GetLocation()};
 		const FQuat Rotation{ SocketTransform.GetRotation() };
@@ -128,7 +202,6 @@ void AShooterCharacter::FireWeapon()
 
 		FVector BeamEndPoint{ End };
 
-
 		GetWorld()->LineTraceSingleByChannel(FireHit, 
 			Start,
 			End,
@@ -136,10 +209,10 @@ void AShooterCharacter::FireWeapon()
 
 		if (FireHit.bBlockingHit)
 		{
-			/*/
+			/*
 			DrawDebugLine(GetWorld(),Start,End,FColor::Red,false,1.f);
 			DrawDebugPoint(GetWorld(), FireHit.Location, 5.f, FColor::Red, false, 1.f);*/
-
+		/*
 			BeamEndPoint = FireHit.Location;
 
 			if (ImpactParticles)
@@ -158,7 +231,7 @@ void AShooterCharacter::FireWeapon()
 			{
 				Beam->SetVectorParameter(FName("Target"), BeamEndPoint);
 			}
-		}
+		}*/
 	}
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
