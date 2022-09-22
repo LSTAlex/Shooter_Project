@@ -5,6 +5,7 @@
 #include "Containers/UnrealString.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AShooterCharacter::AShooterCharacter():
@@ -34,6 +35,19 @@ AShooterCharacter::AShooterCharacter():
 	//Камера не вращается относительно рычага
 	//Camera does not rotate relative to arm
 	FollowCamera->bUsePawnControlRotation = false;
+
+	//не вращается при вращении контроллера
+	//don't rotate when the controller rotates.
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = false;
+	bUseControllerRotationRoll = false;
+
+	//настройка движения персонажа
+	//Configurate character movement
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f);//скорость вращения
+	GetCharacterMovement()->JumpZVelocity = 600.f;
+	GetCharacterMovement()->AirControl = 0.2f;
 }
 
 // Called when the game starts or when spawned

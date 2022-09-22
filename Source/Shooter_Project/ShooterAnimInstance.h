@@ -16,7 +16,7 @@ class SHOOTER_PROJECT_API UShooterAnimInstance : public UAnimInstance
 
 public:
 
-	UFUNCTION(BlueptintCallable)
+	UFUNCTION(BlueprintCallable)
 	void UpdateAnimationProperties(float DeltaTime);
 
 	virtual void NativeInitializeAnimation() override;
