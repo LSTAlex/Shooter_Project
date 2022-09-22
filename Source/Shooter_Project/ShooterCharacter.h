@@ -70,8 +70,15 @@ private:
 	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	float BaseLookUpRate;
 
+	//рандомный звук выстрела из оружия
+	//Randomized gunshoot sound cue
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	class USoundCue* FireSound;
+
+	//вспышка, призванная в сокете ствола
+	//Flash spawned at BarrelSocket
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	class UParticleSystem* MuzzelFlash;
 
 public:
 
