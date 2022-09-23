@@ -116,6 +116,15 @@ private:
 	//значение поля обзора, когда сделано приблежение
 	float CameraZoomedFOV;
 
+	//текущее поле обзора в данном кадре
+	//current field of view this frame
+	float CameraCurrentFOV;
+
+	//скорость интерполяции приблежения камеры при прицеливании
+	//Interpolation speed for zooming aiming
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float ZoomInterpspeed;
+
 public:
 
 	//Возвращает субобъект CameraBoom

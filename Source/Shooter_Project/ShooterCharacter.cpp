@@ -21,7 +21,9 @@ AShooterCharacter::AShooterCharacter():
 	//настройки поля обзора
 	//setting FOV camera
 	CameraDefaultFOV(0.f),//set in BeginPlay
-	CameraZoomedFOV(60.f)
+	CameraZoomedFOV(35.f),
+	CameraCurrentFOV(0.f),
+	ZoomInterpspeed(20.f)
 
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -33,11 +35,11 @@ AShooterCharacter::AShooterCharacter():
 	CameraBoom->SetupAttachment(RootComponent);
 	//Следует за персонажем на этом расстоянии
 	//The camera foolows at this distance behind the character
-	CameraBoom->TargetArmLength = 300.f;
+	CameraBoom->TargetArmLength = 180.f;
 	//вращает рычаг, основываясь на вращении контроллера
 	//Rotate the arm based on the controller
 	CameraBoom->bUsePawnControlRotation = true;
-	CameraBoom->SocketOffset = FVector(0.f, 50.f, 50.f);
+	CameraBoom->SocketOffset = FVector(0.f, 50.f, 70.f);
 
 	//создание следующей камеры
 	//Create a follow camera
@@ -71,6 +73,7 @@ void AShooterCharacter::BeginPlay()
 	if (FollowCamera)
 	{
 		CameraDefaultFOV = GetFollowCamera()->FieldOfView;
+		CameraCurrentFOV = CameraDefaultFOV;
 	}
 }
 
@@ -247,13 +250,11 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzelSocketLocation, 
 void AShooterCharacter::AimingButtonPressed()
 {
 	bAiming = true;
-	GetFollowCamera()->SetFieldOfView(CameraZoomedFOV);
 }
 
 void AShooterCharacter::AimingButtonReleased()
 {
 	bAiming = false;
-	GetFollowCamera()->SetFieldOfView(CameraDefaultFOV);
 }
 
 // Called every frame
@@ -261,6 +262,27 @@ void AShooterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	//нажата ли кнопка прицеливания?
+	//устанавливает текущее поле обзора камеры
+	//Aiming button pressed?
+	//set current camera FOV
+	if (bAiming)
+	{	
+		CameraCurrentFOV = FMath::FInterpTo(
+			CameraCurrentFOV, 
+			CameraZoomedFOV, 
+			DeltaTime, 
+			ZoomInterpspeed);
+	}
+	else
+	{
+		CameraCurrentFOV = FMath::FInterpTo(
+			CameraCurrentFOV,
+			CameraDefaultFOV,
+			DeltaTime,
+			ZoomInterpspeed);	
+	}
+	GetFollowCamera()->SetFieldOfView(CameraCurrentFOV);
 }
 
 // Called to bind functionality to input
