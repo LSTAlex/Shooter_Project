@@ -41,7 +41,12 @@ protected:
 	//called when the Fire Button is pressed
 	void FireWeapon();
 
+	//получить координаты конца дымного следа
+	//get end beam location
 	bool GetBeamEndLocation(const FVector &MuzzelSocketLocation, FVector &OutBeamLocation);
+
+	void AimingButtonPressed();
+	void AimingButtonReleased();
 
 public:	
 	// Called every frame
@@ -51,6 +56,8 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
+
+#pragma region reg1
 	//CameraBoom позиционирует камеру за персонажем 
 	//CameraBoom positioning the camera behind the character
 	UPROPERTY(VisibleAnyWhere,BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -96,7 +103,18 @@ private:
 	//Smoke trail for bullet
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* BeamParticles;
+#pragma endregion reg1
 
+	//true при прицеливании 
+	//true when aiming
+	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	bool bAiming;
+
+	//стандартное значение поля обзора камеры
+	//Default camera field of view value
+	float CameraDefaultFOV;
+	//значение поля обзора, когда сделано приблежение
+	float CameraZoomedFOV;
 
 public:
 
