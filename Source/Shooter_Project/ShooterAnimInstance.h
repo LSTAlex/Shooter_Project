@@ -38,5 +38,10 @@ private:
 	//Whether or not the character is moving
 	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool bIsAccelerating;
+
+	//Смещение рысканья, которое используется для стрейфа
+	//Offset yaw used for strafing
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	float MovementOffsetYaw;
 	
 };
