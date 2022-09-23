@@ -25,6 +25,13 @@ void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 		//Is the character in the air
 		bIsInAir = ShooterCharacter->GetCharacterMovement()->IsFalling();
 
+		FRotator AimRotation = ShooterCharacter->GetBaseAimRotation();
+		FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(ShooterCharacter->GetVelocity());
+		MovementOffsetYaw = UKismetMathLibrary::NormalizedDeltaRotator(
+			MovementRotation,
+			AimRotation
+		).Yaw;
+
 		//двигается ли персонаж
 		//Is the character Accelerating
 		if (ShooterCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f)
@@ -36,12 +43,7 @@ void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 			bIsAccelerating = false;
 		}
 
-		FRotator AimRotation = ShooterCharacter->GetBaseAimRotation();
-		FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(ShooterCharacter->GetVelocity());
-		MovementOffsetYaw = UKismetMathLibrary::NormalizedDeltaRotator(
-			MovementRotation,
-			AimRotation
-		).Yaw;
+		bAiming = ShooterCharacter->GetAiming();
 	}
 }
 
