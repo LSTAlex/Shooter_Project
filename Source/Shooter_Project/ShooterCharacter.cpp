@@ -166,18 +166,37 @@ void AShooterCharacter::FireWeapon()
 			//was there a trace hit
 			if (ScreenTraceHit.bBlockingHit)
 			{
-				//конечная точка дымного следа - местоположение попадания трассировки
-				//Beam end point is now trace hit location
-				BeamEndPoint = ScreenTraceHit.Location;
-				if (ImpactParticles)
-				{
-					UGameplayStatics::SpawnEmitterAtLocation(
-						GetWorld(),
-						ImpactParticles,
-						ScreenTraceHit.Location
-					);
-				}
+				
 			}
+
+			//2 трассировка от ствола оружия
+			//Perform a second trace. this time from the gun barrel
+			FHitResult WeaponTraceHit;
+			const FVector WeaponTraceStart{ SocketTransform.GetLocation() };
+			const FVector WeaponTraceEnd{ BeamEndPoint };
+			GetWorld()->LineTraceSingleByChannel(
+				WeaponTraceHit,
+				WeaponTraceStart,
+				WeaponTraceEnd,
+				ECollisionChannel::ECC_Visibility);
+
+			//есть ли объект между стволом и конечной точкой дымного следа
+			//Object between barrel and 
+			if (WeaponTraceHit.bBlockingHit)
+			{
+				BeamEndPoint = WeaponTraceHit.Location;
+			}
+
+			//конечная точка дымного следа - местоположение попадания трассировки
+			//Beam end point is now trace hit location
+			if (ImpactParticles)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(
+					GetWorld(),
+					ImpactParticles,
+					BeamEndPoint);
+			}
+
 			//Существуют ли частицы дымного следа
 			//Are smoke trail particles creatures
 			if (BeamParticles)
@@ -192,46 +211,6 @@ void AShooterCharacter::FireWeapon()
 				}
 			}
 		}
-
-		/*
-		FHitResult FireHit;
-		const FVector Start{ SocketTransform.GetLocation()};
-		const FQuat Rotation{ SocketTransform.GetRotation() };
-		const FVector RotationAxis{Rotation.GetAxisX()};
-		const FVector End{ Start + RotationAxis * 50'000.f };
-
-		FVector BeamEndPoint{ End };
-
-		GetWorld()->LineTraceSingleByChannel(FireHit, 
-			Start,
-			End,
-			ECollisionChannel::ECC_Visibility);
-
-		if (FireHit.bBlockingHit)
-		{
-			/*
-			DrawDebugLine(GetWorld(),Start,End,FColor::Red,false,1.f);
-			DrawDebugPoint(GetWorld(), FireHit.Location, 5.f, FColor::Red, false, 1.f);*/
-		/*
-			BeamEndPoint = FireHit.Location;
-
-			if (ImpactParticles)
-			{
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, FireHit.Location);
-			}
-		}
-
-		if (BeamParticles)
-		{
-			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
-				GetWorld(), 
-				BeamParticles, 
-				SocketTransform);
-			if (Beam)
-			{
-				Beam->SetVectorParameter(FName("Target"), BeamEndPoint);
-			}
-		}*/
 	}
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
