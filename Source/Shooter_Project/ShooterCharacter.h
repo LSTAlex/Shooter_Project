@@ -36,6 +36,16 @@ protected:
 	//Called via input to look up/down at a given rate
 	//@param Rate this is a normalized rate. 1 = 100% of disired turn rate
 	void LookUpAtRate(float Rate);
+
+	//вращение контроллера на основе движения мыши по Х
+	//Rotate controller based on mouse X movement
+	//@param Value The inpun value from mouse movement
+	void Turn(float Value);
+
+	//вращение контроллера на основе движения мыши по Y
+	//Rotate controller based on mouse Y movement
+	//@param Value The inpun value from mouse movement
+	void LookUp(float Value);
 	
 	//вызывается, когда нажата кнопка стрельбы
 	//called when the Fire Button is pressed
@@ -47,6 +57,16 @@ protected:
 
 	void AimingButtonPressed();
 	void AimingButtonReleased();
+
+	//плавное прицеливание
+	//smooth aiming
+	void CameraInterpZoom(float DeltaTime);
+
+	//устанавливает базовую скоость вращения в зависимости от прицеливания
+	//Set BaseTurnRate and BaseLookUpRate based on aiming
+	void SetLookRates();
+
+
 
 public:	
 	// Called every frame
@@ -103,7 +123,7 @@ private:
 	//Smoke trail for bullet
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* BeamParticles;
-#pragma endregion reg1
+
 
 	//true при прицеливании 
 	//true when aiming
@@ -124,6 +144,39 @@ private:
 	//Interpolation speed for zooming aiming
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float ZoomInterpspeed;
+#pragma endregion reg1
+
+
+	//скорость вращения по вертикали не в прицеливании
+	//Turn rate while not aiming
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	float HipTurnRate;
+	//скорость вращения по горизонталине в прицеливании
+	//Look up rate when not aiming
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	float HipLookUpRate;
+	//скорость вращения по горизонтали в прицеливании
+	//Turn rate when aiming
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	float AimingTurnRate;
+	//скорость вращения по вертикали в прицеливании
+	//Look up rate when aimng
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	float AimingLookUpRate;
+
+	//множители обзора при использовании мыши не в прицеливании
+	//Scale factor for mouse look sensitivity. Turn rate when not aiming
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"), meta = (ClampMin = "0.0", ClampMax = "1.0",UIMin = "0.0", UIMax = "1.0"))
+	float MouseHipTurnRate;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"), meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
+	float MouseHipLookUpRate;
+
+	//множители обзора при использовании мыши  в прицеливании
+	//Scale factor for mouse look sensitivity. LookUp rate when aiming
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"), meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
+	float MouseAimingTurnRate;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"), meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
+	float MouseAimingLookUpRate;
 
 public:
 
