@@ -16,6 +16,8 @@ public:
 	AShooterCharacter();
 
 protected:
+
+#pragma region reg2
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -65,8 +67,9 @@ protected:
 	//устанавливает базовую скоость вращения в зависимости от прицеливания
 	//Set BaseTurnRate and BaseLookUpRate based on aiming
 	void SetLookRates();
+#pragma endregion reg2
 
-
+	void CalculateCrosshairSpread(float DeltaTime);
 
 public:	
 	// Called every frame
@@ -144,8 +147,6 @@ private:
 	//Interpolation speed for zooming aiming
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float ZoomInterpspeed;
-#pragma endregion reg1
-
 
 	//скорость вращения по вертикали не в прицеливании
 	//Turn rate while not aiming
@@ -175,8 +176,28 @@ private:
 	//Scale factor for mouse look sensitivity. LookUp rate when aiming
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"), meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
 	float MouseAimingTurnRate;
+#pragma endregion reg1
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"), meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
 	float MouseAimingLookUpRate;
+
+	//определяет разброс перекрестия
+	//
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
+	float CrosshairSpreadMultiplier;
+	//компонент скорости для разброса перекрестия
+	//Velocity component for crosshairs spread
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
+	float CrosshairVelosityFactor;
+	//компонент в воздехе для разброса перекрестия
+	//in air component for crosshairs spread
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
+	float CrosshairInAirFactor;
+	//компонент стрельбы для разброса перекрестия
+	//Shooting component for crosshairs spread
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
+	float CrosshairShootingFactor;
+
 
 public:
 

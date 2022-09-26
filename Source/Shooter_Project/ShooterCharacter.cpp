@@ -251,6 +251,28 @@ void AShooterCharacter::SetLookRates()
 	}
 }
 
+void AShooterCharacter::CalculateCrosshairSpread(float DeltaTime)
+{
+	//скорость персонажа по-умолчанию 600
+	//speed character default 600
+	FVector2D WalkSpeedRange{ 0.f,600.f };
+	FVector2D VelocityMultiplier{ 0.f,1.f };
+	FVector Velocity{ GetVelocity() };
+	//необходимы значения ускарения только X и Y
+	//need speen only vector direction X and Y
+	Velocity.Z = 0;
+
+	//нормализация скорости персонажа
+	//normalize speed character
+	//600 = 1, 300 = 0.5
+	CrosshairVelosityFactor = FMath::GetMappedRangeValueClamped(
+		WalkSpeedRange, 
+		VelocityMultiplier, 
+		Velocity.Size());
+
+	CrosshairSpreadMultiplier = 0.5f + CrosshairVelosityFactor;
+}
+
 bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzelSocketLocation, FVector& OutBeamLocation)
 {
 	//получение текущего размера Viewport
