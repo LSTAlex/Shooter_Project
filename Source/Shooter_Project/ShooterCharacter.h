@@ -208,6 +208,11 @@ public:
 	//возвращает FollowCamera
 	//Returns FollowCamera subobject
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-
+	
+	//возвращает bAiming
+	//Returns bAiming
 	FORCEINLINE bool GetAiming() const { return bAiming; }
+
+	UFUNCTION(BlueprintCallable)
+	float GetCrosshairSpreadMultiplier() const { return CrosshairSpreadMultiplier; }
 };

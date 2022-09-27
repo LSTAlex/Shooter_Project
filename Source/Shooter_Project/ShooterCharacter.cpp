@@ -370,6 +370,10 @@ void AShooterCharacter::Tick(float DeltaTime)
 	//изменение чувствительности вращения в зависимости от прицеливания
 	//Change look sensitivity based on aiming
 	SetLookRates();
+	
+	//вычисление множителя расширения перекрестия
+	//Calculate crosshair spread multuplier
+	CalculateCrosshairSpread(DeltaTime);
 }
 
 // Called to bind functionality to input
