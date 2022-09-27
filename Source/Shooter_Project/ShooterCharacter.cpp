@@ -270,7 +270,24 @@ void AShooterCharacter::CalculateCrosshairSpread(float DeltaTime)
 		VelocityMultiplier, 
 		Velocity.Size());
 
-	CrosshairSpreadMultiplier = 0.5f + CrosshairVelosityFactor;
+	//вычисление фактора нахождения в воздухе для прицела
+	//Calculate croshair in air factor
+	if (GetCharacterMovement()->IsFalling())
+	{
+		//расширение перекрестия, пока персонаж в воздухе
+		//Spread the crosshair while in air
+		CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 2.25f, DeltaTime, 2.f);
+	}
+	else
+	{
+		//быстро сжимает прицел, когда персонаж находится на земле
+		//Shrink the crosshairs rapidly while on yhe ground
+		CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 0.f, DeltaTime, 20.f);
+	}
+
+	CrosshairSpreadMultiplier = 0.5f + 
+		CrosshairVelosityFactor + 
+		CrosshairInAirFactor;
 }
 
 bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzelSocketLocation, FVector& OutBeamLocation)
