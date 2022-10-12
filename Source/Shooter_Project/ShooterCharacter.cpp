@@ -37,7 +37,14 @@ AShooterCharacter::AShooterCharacter():
 	CameraDefaultFOV(0.f),//set in BeginPlay
 	CameraZoomedFOV(35.f),
 	CameraCurrentFOV(0.f),
-	ZoomInterpspeed(20.f)
+	ZoomInterpspeed(20.f),
+	//факторы расширения перекрестия
+	//Crosshair spread factors
+	CrosshairSpreadMultiplier(0.f),
+	CrosshairVelosityFactor(0.f),
+	CrosshairInAirFactor(0.f),
+	CrosshairInAimFactor(0.f),
+	CrosshairShootingFactor(0.f)
 	
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -285,9 +292,32 @@ void AShooterCharacter::CalculateCrosshairSpread(float DeltaTime)
 		CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 0.f, DeltaTime, 20.f);
 	}
 
+	//прицеливаемся ли мы?
+	//are we aiming?
+	if (bAiming)
+	{
+		//небольшое сжатие перекрестия очень быстро
+		//Shrink crosshair a small very quickly
+		CrosshairInAimFactor = FMath::FInterpTo(
+			CrosshairInAimFactor, 
+			0.6f,
+			DeltaTime, 
+			30.0f);
+	}
+	else
+	{
+		//очень быстро возвращает пперекрестие в нормальное состояние
+		//Spread crosshairs back to normal very quickly
+		CrosshairInAimFactor = FMath::FInterpTo(
+			CrosshairInAimFactor,
+			0.0f,
+			DeltaTime,
+			30.0f);
+	}
+
 	CrosshairSpreadMultiplier = 0.5f + 
 		CrosshairVelosityFactor + 
-		CrosshairInAirFactor;
+		CrosshairInAirFactor - CrosshairInAimFactor;
 }
 
 bool AShooterCharacter::GetBeamEndLocation(

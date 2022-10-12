@@ -193,6 +193,8 @@ private:
 	//in air component for crosshairs spread
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
 	float CrosshairInAirFactor;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
+	float CrosshairInAimFactor;
 	//компонент стрельбы для разброса перекрестия
 	//Shooting component for crosshairs spread
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
