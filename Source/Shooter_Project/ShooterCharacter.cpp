@@ -44,7 +44,11 @@ AShooterCharacter::AShooterCharacter():
 	CrosshairVelosityFactor(0.f),
 	CrosshairInAirFactor(0.f),
 	CrosshairInAimFactor(0.f),
-	CrosshairShootingFactor(0.f)
+	CrosshairShootingFactor(0.f),
+	//переменные таймера стрельбы
+	//bullet fire timer variables
+	ShootTimeDuration(0.05f),
+	bFiringBullet(false)
 	
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -217,6 +221,10 @@ void AShooterCharacter::FireWeapon()
 		AnimInstance->Montage_Play(HipFireMontage);
 		AnimInstance->Montage_JumpToSection(FName("StartFire"));
 	}
+
+	//запускает таймер BulletFire для перекрестий
+	//Start BulletFire timer for crosshair
+	StartCrosshairBulletFire();
 }
 
 void AShooterCharacter::CameraInterpZoom(float DeltaTime)
@@ -315,9 +323,37 @@ void AShooterCharacter::CalculateCrosshairSpread(float DeltaTime)
 			30.0f);
 	}
 
+
+	if (bFiringBullet)
+	{
+		CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.3f, DeltaTime, 60.f);
+	}
+	else
+	{
+		CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.f, DeltaTime, 60.f);
+	}
+
 	CrosshairSpreadMultiplier = 0.5f + 
 		CrosshairVelosityFactor + 
-		CrosshairInAirFactor - CrosshairInAimFactor;
+		CrosshairInAirFactor - 
+		CrosshairInAimFactor +
+		CrosshairShootingFactor;
+}
+
+void AShooterCharacter::FinishCrosshairBulletFire()
+{
+	bFiringBullet = false;
+}
+
+void AShooterCharacter::StartCrosshairBulletFire()
+{
+	bFiringBullet = true;
+	
+	GetWorldTimerManager().SetTimer(
+		CrosshairShootTimer,
+		this,
+		&AShooterCharacter::FinishCrosshairBulletFire,
+		ShootTimeDuration);
 }
 
 bool AShooterCharacter::GetBeamEndLocation(
@@ -335,7 +371,6 @@ bool AShooterCharacter::GetBeamEndLocation(
 	//Местоположение перекрестия в экранном пространстве
 	//Get screen space location of crosshairs
 	FVector2D CrosshairLocation(ViewPortSize.X / 2.f, ViewPortSize.Y / 2.f);
-	CrosshairLocation.Y -= 50.f;
 	FVector CrosshairWorldPosition;
 	FVector CrosshairWorldDirection;
 
