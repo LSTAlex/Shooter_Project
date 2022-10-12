@@ -290,7 +290,9 @@ void AShooterCharacter::CalculateCrosshairSpread(float DeltaTime)
 		CrosshairInAirFactor;
 }
 
-bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzelSocketLocation, FVector& OutBeamLocation)
+bool AShooterCharacter::GetBeamEndLocation(
+	const FVector& MuzzelSocketLocation, 
+	FVector& OutBeamLocation)
 {
 	//получение текущего размера Viewport
 		//get current size of the Viewport
