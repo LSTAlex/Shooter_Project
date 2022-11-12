@@ -11,6 +11,8 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "DrawDebugHelpers.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Item.h"
+#include "Components/WidgetComponent.h"
 
 
 // Sets default values
@@ -395,12 +397,56 @@ void AShooterCharacter::AutoFireReset()
 	}
 }
 
+bool AShooterCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult)
+{
+	//получение текущего размера Viewport
+	//get current size of the Viewport
+	FVector2D ViewPortSize;
+	if (GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->GetViewportSize(ViewPortSize);
+	}
+
+	//Местоположение перекрестия в экранном пространстве
+	//Get screen space location of crosshairs
+	FVector2D CrosshairLocation(ViewPortSize.X / 2.f, ViewPortSize.Y / 2.f);
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+
+	//Получение мирового положения и направления для перекрестия
+	//Get world position and direction of crosshair
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this, 0),
+		CrosshairLocation,
+		CrosshairWorldPosition,
+		CrosshairWorldDirection);
+
+	if (bScreenToWorld)
+	{
+		//трассировка от мирового положения перекрестия во вне
+		//Trace from crosshair world location outward
+		const FVector Start{ CrosshairWorldPosition };
+		const FVector End{ Start + CrosshairWorldDirection * 50'000.f };
+		GetWorld()->LineTraceSingleByChannel(
+			OutHitResult,
+			Start,
+			End,
+			ECollisionChannel::ECC_Visibility);
+
+		if (OutHitResult.bBlockingHit)
+		{
+			return false;
+		}
+	}
+
+	return false;
+}
+
 bool AShooterCharacter::GetBeamEndLocation(
 	const FVector& MuzzelSocketLocation, 
 	FVector& OutBeamLocation)
 {
 	//получение текущего размера Viewport
-		//get current size of the Viewport
+	//get current size of the Viewport
 	FVector2D ViewPortSize;
 	if (GEngine && GEngine->GameViewport)
 	{
@@ -497,6 +543,20 @@ void AShooterCharacter::Tick(float DeltaTime)
 	//вычисление множителя расширения перекрестия
 	//Calculate crosshair spread multuplier
 	CalculateCrosshairSpread(DeltaTime);
+
+	FHitResult ItemTraceResult;
+	TraceUnderCrosshairs(ItemTraceResult);
+	if (ItemTraceResult.bBlockingHit)
+	{
+		AItem* HitItem = Cast<AItem>(ItemTraceResult.Actor);
+		if (HitItem && HitItem->GetPickupWidget())
+		{
+			//показать Widget поднимаемого предмета
+			//Show Item's pickup Widget
+			HitItem->GetPickupWidget()->SetVisibility(true);
+		}
+	}
+
 }
 
 // Called to bind functionality to input

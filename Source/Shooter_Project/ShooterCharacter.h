@@ -84,6 +84,10 @@ protected:
 	UFUNCTION()
 	void AutoFireReset();
 
+	//Линейная трассировка для предметов под перекрестием
+	//Line trace for items under the crosshairs
+	bool TraceUnderCrosshairs(FHitResult& OutHitResult);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
