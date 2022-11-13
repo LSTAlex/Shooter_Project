@@ -88,6 +88,10 @@ protected:
 	//Line trace for items under the crosshairs
 	bool TraceUnderCrosshairs(FHitResult& OutHitResult, FVector OutHitLocation);
 
+	//Трассировка для предметов, в случае если OverlappedItemCount <0
+	//Trace for items if OverlappedItemCount >0
+	void TraceForItems();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -215,7 +219,7 @@ private:
 	//Shooting component for crosshairs spread
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
 	float CrosshairShootingFactor;
-#pragma endregion reg1
+
 
 	float ShootTimeDuration;
 	bool bFiringBullet;
@@ -237,6 +241,14 @@ private:
 	//sets a timer between gunshots
 	FTimerHandle AutoFireTimer;
 
+	//Имеет значение true если нужно делать трассировку каждый кадр для обнаружения предметов
+	//True if we should trace every fame for items
+	bool bShouldTraceForItems;
+#pragma endregion reg1
+	//Кол-во пересечённых предметов
+	//Number of overlapped AItems
+	int8 OverlappedItemConut;
+
 public:
 
 	//Возвращает субобъект CameraBoom
@@ -253,4 +265,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	float GetCrosshairSpreadMultiplier() const { return CrosshairSpreadMultiplier; }
+
+	FORCEINLINE int8 GetOverlappedItemCount() const { return OverlappedItemConut; }
+
+	//Увеличивает или уменьшает OverlappedItemConut и обновляет bShouldTraceForItems
+	//Adds/substracts to/from OverlappedItemConut and updates bShouldTraceForItems
+	void IncrementOverlappedItemCount(int8 Amount);
 };

@@ -19,6 +19,26 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	//Вызывается при пересечении AreaSphere
+	//Called when overlapping AreaSphere
+	UFUNCTION()
+	void OnSphereOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtheBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult);
+
+	//Вызывается при завершении пересечения AreaSphere
+	//Called when end overlapping AreaSphere
+	UFUNCTION()
+	void OnSphereEndOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtheBodyIndex);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -39,6 +59,11 @@ private:
 	//Popup widget for when the player looks at the item
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* PickupWidget;
+
+	//Включает трассировку после пересечения
+	//Enable item tracing when overlapped
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	class USphereComponent* AreaSphere;
 
 public:
 

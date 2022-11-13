@@ -55,7 +55,10 @@ AShooterCharacter::AShooterCharacter():
 	//Automatic fire variable
 	AutomaticFireRate(0.1f),
 	bShouldFire(true),
-	bFireButtonPressed(false)
+	bFireButtonPressed(false),
+	//Переменные трассировки предметов
+	//Item trace variable
+	bShouldTraceForItems(false)
 	
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -443,6 +446,26 @@ bool AShooterCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector O
 	return false;
 }
 
+void AShooterCharacter::TraceForItems()
+{
+	if (bShouldTraceForItems)
+	{
+		FHitResult ItemTraceResult;
+		FVector HitLocation;
+		TraceUnderCrosshairs(ItemTraceResult, HitLocation);
+		if (ItemTraceResult.bBlockingHit)
+		{
+			AItem* HitItem = Cast<AItem>(ItemTraceResult.Actor);
+			if (HitItem && HitItem->GetPickupWidget())
+			{
+				//показать Widget поднимаемого предмета
+				//Show Item's pickup Widget
+				HitItem->GetPickupWidget()->SetVisibility(true);
+			}
+		}
+	}
+}
+
 bool AShooterCharacter::GetBeamEndLocation(
 	const FVector& MuzzelSocketLocation, 
 	FVector& OutBeamLocation)
@@ -515,19 +538,9 @@ void AShooterCharacter::Tick(float DeltaTime)
 	//Calculate crosshair spread multuplier
 	CalculateCrosshairSpread(DeltaTime);
 
-	FHitResult ItemTraceResult;
-	FVector HitLocation;
-	TraceUnderCrosshairs(ItemTraceResult, HitLocation);
-	if (ItemTraceResult.bBlockingHit)
-	{
-		AItem* HitItem = Cast<AItem>(ItemTraceResult.Actor);
-		if (HitItem && HitItem->GetPickupWidget())
-		{
-			//показать Widget поднимаемого предмета
-			//Show Item's pickup Widget
-			HitItem->GetPickupWidget()->SetVisibility(true);
-		}
-	}
+	//проверка OverlappedItemCount, затем трассировка для предметов
+	//Check OverlappedItemCount, then trace for items
+	TraceForItems();
 
 }
 
@@ -555,5 +568,19 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		&AShooterCharacter::AimingButtonPressed);
 	PlayerInputComponent->BindAction("AimingButton", IE_Released, this,
 		&AShooterCharacter::AimingButtonReleased);
+}
+
+void AShooterCharacter::IncrementOverlappedItemCount(int8 Amount)
+{
+	if (OverlappedItemConut + Amount <= 0)
+	{
+		OverlappedItemConut = 0;
+		bShouldTraceForItems = false;
+	}
+	else
+	{
+		OverlappedItemConut += Amount;
+		bShouldTraceForItems = true;
+	}
 }
 
