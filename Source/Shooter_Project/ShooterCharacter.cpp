@@ -397,7 +397,7 @@ void AShooterCharacter::AutoFireReset()
 	}
 }
 
-bool AShooterCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult)
+bool AShooterCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector OutHitLocation)
 {
 	//получение текущего размера Viewport
 	//get current size of the Viewport
@@ -426,6 +426,7 @@ bool AShooterCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult)
 		//Trace from crosshair world location outward
 		const FVector Start{ CrosshairWorldPosition };
 		const FVector End{ Start + CrosshairWorldDirection * 50'000.f };
+		OutHitLocation = End;
 		GetWorld()->LineTraceSingleByChannel(
 			OutHitResult,
 			Start,
@@ -434,7 +435,8 @@ bool AShooterCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult)
 
 		if (OutHitResult.bBlockingHit)
 		{
-			return false;
+			OutHitLocation = OutHitResult.Location;
+			return true;
 		}
 	}
 
@@ -445,72 +447,41 @@ bool AShooterCharacter::GetBeamEndLocation(
 	const FVector& MuzzelSocketLocation, 
 	FVector& OutBeamLocation)
 {
-	//получение текущего размера Viewport
-	//get current size of the Viewport
-	FVector2D ViewPortSize;
-	if (GEngine && GEngine->GameViewport)
+	//проверка на попадание трассировки от перекрестия
+	//Check for crosshair trace hit
+	FHitResult CrosshairHitResult;
+	bool bCrosshairHit = TraceUnderCrosshairs(CrosshairHitResult, OutBeamLocation);
+
+	if (bCrosshairHit)
 	{
-		GEngine->GameViewport->GetViewportSize(ViewPortSize);
+		//Временное положение дысного следа
+		//Tentative beam location
+		OutBeamLocation = CrosshairHitResult.Location;
+	}
+	else // no crosshair trace hit
+	{
+		//OutBeamLocation это конечное местоположение линейной трассировки
+		//OutBeamLocation is the END location for the line trace
 	}
 
-	//Местоположение перекрестия в экранном пространстве
-	//Get screen space location of crosshairs
-	FVector2D CrosshairLocation(ViewPortSize.X / 2.f, ViewPortSize.Y / 2.f);
-	FVector CrosshairWorldPosition;
-	FVector CrosshairWorldDirection;
+	
+	//2 трассировка от ствола оружия
+	//Perform a second trace. this time from the gun barrel
+	FHitResult WeaponTraceHit;
+	const FVector WeaponTraceStart{ MuzzelSocketLocation };
+	const FVector StartToEnd{ OutBeamLocation - MuzzelSocketLocation };
+	const FVector WeaponTraceEnd{ MuzzelSocketLocation + StartToEnd * 1.25f };
+	GetWorld()->LineTraceSingleByChannel(
+		WeaponTraceHit,
+		WeaponTraceStart,
+		WeaponTraceEnd,
+		ECollisionChannel::ECC_Visibility);
 
-	//Получение мирового положения и направления для перекрестия
-	//Get world position and direction of crosshair
-	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this, 0),
-		CrosshairLocation,
-		CrosshairWorldPosition,
-		CrosshairWorldDirection);
-
-    //была ли дипроекция успешна
-	//was deprojection successful
-	if (bScreenToWorld)
+	//есть ли объект между стволом и конечной точкой дымного следа
+	//Object between barrel and 
+	if (WeaponTraceHit.bBlockingHit)
 	{
-		FHitResult ScreenTraceHit;
-		const FVector Start{ CrosshairWorldPosition };
-		const FVector End{ CrosshairWorldPosition + CrosshairWorldDirection * 50'000.f };
-
-		//установление конечной точки дымного следа как конечная точка трассировки
-		//Set beam end point to line trace end pint
-		OutBeamLocation = End;
-
-		//трассировка вперед от мирового положения перекрестия
-		//Trace outward from crosshairs world location
-		GetWorld()->LineTraceSingleByChannel(
-			ScreenTraceHit,
-			Start,
-			End,
-			ECollisionChannel::ECC_Visibility);
-
-		//было ли попадание трассировки
-		//was there a trace hit
-		if (ScreenTraceHit.bBlockingHit)
-		{
-			OutBeamLocation = ScreenTraceHit.Location;
-		}
-
-		//2 трассировка от ствола оружия
-		//Perform a second trace. this time from the gun barrel
-		FHitResult WeaponTraceHit;
-		const FVector WeaponTraceStart{ MuzzelSocketLocation };
-		const FVector WeaponTraceEnd{ OutBeamLocation };
-		GetWorld()->LineTraceSingleByChannel(
-			WeaponTraceHit,
-			WeaponTraceStart,
-			WeaponTraceEnd,
-			ECollisionChannel::ECC_Visibility);
-
-		//есть ли объект между стволом и конечной точкой дымного следа
-		//Object between barrel and 
-		if (WeaponTraceHit.bBlockingHit)
-		{
-			OutBeamLocation = WeaponTraceHit.Location;
-		}
-
+		OutBeamLocation = WeaponTraceHit.Location;
 		return true;
 	}
 
@@ -545,7 +516,8 @@ void AShooterCharacter::Tick(float DeltaTime)
 	CalculateCrosshairSpread(DeltaTime);
 
 	FHitResult ItemTraceResult;
-	TraceUnderCrosshairs(ItemTraceResult);
+	FVector HitLocation;
+	TraceUnderCrosshairs(ItemTraceResult, HitLocation);
 	if (ItemTraceResult.bBlockingHit)
 	{
 		AItem* HitItem = Cast<AItem>(ItemTraceResult.Actor);

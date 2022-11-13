@@ -86,7 +86,7 @@ protected:
 
 	//Линейная трассировка для предметов под перекрестием
 	//Line trace for items under the crosshairs
-	bool TraceUnderCrosshairs(FHitResult& OutHitResult);
+	bool TraceUnderCrosshairs(FHitResult& OutHitResult, FVector OutHitLocation);
 
 public:	
 	// Called every frame
