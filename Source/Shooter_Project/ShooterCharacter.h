@@ -246,10 +246,15 @@ private:
 	bool bShouldTraceForItems;
 
 #pragma endregion reg1
+
 	//Кол-во пересечённых предметов
 	//Number of overlapped AItems
-
 	int8 OverlappedItemConut;
+
+	//AItem в который попала трассировка в последнем кадре 
+	//AItem we hit last frame
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = Items, meta = (AllowPrivateAccess = "true"))
+	class AItem* TraceHitItemLastFrame;
 
 public:
 

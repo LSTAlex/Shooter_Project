@@ -437,7 +437,7 @@ bool AShooterCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector O
 			ECollisionChannel::ECC_Visibility);
 
 		//проверка трассировки при пересечении AreaSphere
-		// check line trace after overlapping AreaSphere
+		//check line trace after overlapping AreaSphere
 		//DrawDebugLine(GetWorld(),Start,End,FColor::Red,false, 2.f);
 
 		if (OutHitResult.bBlockingHit)
@@ -454,7 +454,6 @@ void AShooterCharacter::TraceForItems()
 {
 	if (bShouldTraceForItems)
 	{
-
 		FHitResult ItemTraceResult;
 		FVector HitLocation;
 		TraceUnderCrosshairs(ItemTraceResult, HitLocation);
@@ -467,7 +466,26 @@ void AShooterCharacter::TraceForItems()
 				//Show Item's pickup Widget
 				HitItem->GetPickupWidget()->SetVisibility(true);
 			}
+
+			if (TraceHitItemLastFrame)
+			{
+				if (HitItem != TraceHitItemLastFrame)
+				{
+					//трассировка попала в другой AItem в этом кадре или AItem нет 
+					//We are hitting a different AItem this frame or AItem is null
+					TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+				}
+			}
+			//хранится ссылка на предмет найденный при помощи трассировки для следующего кадра 
+			//storage a reference to HitItem for next frame
+			TraceHitItemLastFrame = HitItem;
 		}
+	}
+	else if (TraceHitItemLastFrame)
+	{
+		//Никакие предметы больше не пересечены, не нужно показывать PickupWidget предметов
+		//No longer overlapping any items. Item last frame should not show PickupWidget
+		TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
 	}
 }
 
