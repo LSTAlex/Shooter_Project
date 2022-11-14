@@ -244,9 +244,11 @@ private:
 	//Имеет значение true если нужно делать трассировку каждый кадр для обнаружения предметов
 	//True if we should trace every fame for items
 	bool bShouldTraceForItems;
+
 #pragma endregion reg1
 	//Кол-во пересечённых предметов
 	//Number of overlapped AItems
+
 	int8 OverlappedItemConut;
 
 public:

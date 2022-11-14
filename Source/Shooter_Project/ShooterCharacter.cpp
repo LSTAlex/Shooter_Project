@@ -436,6 +436,10 @@ bool AShooterCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector O
 			End,
 			ECollisionChannel::ECC_Visibility);
 
+		//проверка трассировки при пересечении AreaSphere
+		// check line trace after overlapping AreaSphere
+		//DrawDebugLine(GetWorld(),Start,End,FColor::Red,false, 2.f);
+
 		if (OutHitResult.bBlockingHit)
 		{
 			OutHitLocation = OutHitResult.Location;
@@ -450,6 +454,7 @@ void AShooterCharacter::TraceForItems()
 {
 	if (bShouldTraceForItems)
 	{
+
 		FHitResult ItemTraceResult;
 		FVector HitLocation;
 		TraceUnderCrosshairs(ItemTraceResult, HitLocation);
@@ -541,7 +546,6 @@ void AShooterCharacter::Tick(float DeltaTime)
 	//проверка OverlappedItemCount, затем трассировка для предметов
 	//Check OverlappedItemCount, then trace for items
 	TraceForItems();
-
 }
 
 // Called to bind functionality to input
