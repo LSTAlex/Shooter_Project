@@ -119,6 +119,5 @@ void AItem::SetActiveStars()
 void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 

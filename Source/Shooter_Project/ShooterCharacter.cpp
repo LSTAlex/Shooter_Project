@@ -13,6 +13,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Item.h"
 #include "Components/WidgetComponent.h"
+#include "Weapon.h"
 
 
 // Sets default values
@@ -110,6 +111,10 @@ void AShooterCharacter::BeginPlay()
 		CameraDefaultFOV = GetFollowCamera()->FieldOfView;
 		CameraCurrentFOV = CameraDefaultFOV;
 	}
+
+	//Призыв стандартного оружия и  его прикрепление к мешу
+	//Spawn the default weapon and attach it to the mesh
+	SpawnDefaultWeapon();
 }
 
 void AShooterCharacter::MoveForward(float Value)
@@ -486,6 +491,32 @@ void AShooterCharacter::TraceForItems()
 		//Никакие предметы больше не пересечены, не нужно показывать PickupWidget предметов
 		//No longer overlapping any items. Item last frame should not show PickupWidget
 		TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+	}
+}
+
+void AShooterCharacter::SpawnDefaultWeapon()
+{
+	//Проверка переменной TSubclassOf
+	//Check the TSubclassOf variable
+	if (DefaultWeaponClass)
+	{
+		//Призыв оружия
+		//Spawn the Weapon
+		AWeapon* DefaultWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultWeaponClass);
+
+		//Получение сокета руки 
+		//Get the Hand Socket
+		const USkeletalMeshSocket* HandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
+
+		if (HandSocket)
+		{
+			//Прикрепление оружия к сокету руки RightHandSocket
+			//Attach the weapon to the hand socket RightHandSocket
+			HandSocket->AttachActor(DefaultWeapon, GetMesh());
+		}
+		//устанавливает экипированное оруже, как новое призванное оружие
+		//Set EquippedWeapon to the newly spawned Weapon
+		EquippedWeapon = DefaultWeapon;
 	}
 }
 
