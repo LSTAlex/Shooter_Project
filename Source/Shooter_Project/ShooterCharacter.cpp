@@ -14,6 +14,8 @@
 #include "Item.h"
 #include "Components/WidgetComponent.h"
 #include "Weapon.h"
+#include "Components/SphereComponent.h"
+#include "Components/BoxComponent.h"
 
 
 // Sets default values
@@ -114,7 +116,8 @@ void AShooterCharacter::BeginPlay()
 
 	//ѕризыв стандартного оружи€ и  его прикрепление к мешу
 	//Spawn the default weapon and attach it to the mesh
-	SpawnDefaultWeapon();
+	EquipWeapon(SpawnDefaultWeapon());
+	
 }
 
 void AShooterCharacter::MoveForward(float Value)
@@ -494,7 +497,7 @@ void AShooterCharacter::TraceForItems()
 	}
 }
 
-void AShooterCharacter::SpawnDefaultWeapon()
+AWeapon* AShooterCharacter::SpawnDefaultWeapon()
 {
 	//ѕроверка переменной TSubclassOf
 	//Check the TSubclassOf variable
@@ -502,21 +505,33 @@ void AShooterCharacter::SpawnDefaultWeapon()
 	{
 		//ѕризыв оружи€
 		//Spawn the Weapon
-		AWeapon* DefaultWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultWeaponClass);
+		return GetWorld()->SpawnActor<AWeapon>(DefaultWeaponClass);
+	}
+	return nullptr;
+}
 
-		//ѕолучение сокета руки 
-		//Get the Hand Socket
+void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip)
+{
+	if (WeaponToEquip)
+	{
+		//заставл€ет AreaSphere игнорировать все коллизии
+		//Set AreaSphere to ignor all collision channels
+		WeaponToEquip->GetAreaSphere()->SetCollisionResponseToAllChannels(
+		ECR_Ignore);
+
+		//заставл€ет CollisionBox игнорировать все коллизии
+		//Set CollisionBox to ignor all collision channels
+		WeaponToEquip->GetCollisionBox()->SetCollisionResponseToAllChannels(
+			ECR_Ignore);
+
 		const USkeletalMeshSocket* HandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
-
 		if (HandSocket)
 		{
 			//ѕрикрепление оружи€ к сокету руки RightHandSocket
 			//Attach the weapon to the hand socket RightHandSocket
-			HandSocket->AttachActor(DefaultWeapon, GetMesh());
+			HandSocket->AttachActor(WeaponToEquip, GetMesh());
 		}
-		//устанавливает экипированное оруже, как новое призванное оружие
-		//Set EquippedWeapon to the newly spawned Weapon
-		EquippedWeapon = DefaultWeapon;
+		EquippedWeapon = WeaponToEquip;
 	}
 }
 

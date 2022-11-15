@@ -91,8 +91,14 @@ protected:
 	//Трассировка для предметов, в случае если OverlappedItemCount <0
 	//Trace for items if OverlappedItemCount >0
 	void TraceForItems();
+	
+	//призывает стандартное оружие и экипировывает его
+	//Spawn a default weapon and equip it
+	class AWeapon* SpawnDefaultWeapon();
 
-	void SpawnDefaultWeapon();
+	//Берёт оружие и прикрепляет его к мешу
+	//Takes a weapon and attaches it to the mesh
+	void EquipWeapon(AWeapon* WeaponToEquip);
 
 public:	
 	// Called every frame
@@ -261,7 +267,7 @@ private:
 	//Текущее экипированное оружие
 	//Currently qequipped Weapon
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	class AWeapon* EquippedWeapon;
+	AWeapon* EquippedWeapon;
 
 	//Установить это в Blueprints для стандартного класса оружия
 	//Set this in Blueprints for the default Weapon class
