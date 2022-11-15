@@ -67,7 +67,6 @@ protected:
 	//устанавливает базовую скоость вращени€ в зависимости от прицеливани€
 	//Set BaseTurnRate and BaseLookUpRate based on aiming
 	void SetLookRates();
-#pragma endregion reg2
 
 	void CalculateCrosshairSpread(float DeltaTime);
 
@@ -91,7 +90,7 @@ protected:
 	//“рассировка дл€ предметов, в случае если OverlappedItemCount <0
 	//Trace for items if OverlappedItemCount >0
 	void TraceForItems();
-	
+#pragma endregion reg2	
 	//призывает стандартное оружие и экипировывает его
 	//Spawn a default weapon and equip it
 	class AWeapon* SpawnDefaultWeapon();
@@ -99,6 +98,14 @@ protected:
 	//ЅерЄт оружие и прикрепл€ет его к мешу
 	//Takes a weapon and attaches it to the mesh
 	void EquipWeapon(AWeapon* WeaponToEquip);
+
+	//ќткрепл€ет оружие и позвол€ет ему падать на землю
+	//Detach weapon and let it fall to the ground
+	void DropWeapon();
+
+	void SelectButtonPressed();
+
+	void SelectButtonReleased();
 
 public:	
 	// Called every frame
