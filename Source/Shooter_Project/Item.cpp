@@ -148,6 +148,7 @@ void AItem::SetItemProperties(EItemState State)
 	case EItemState::EIS_PickedUp:
 		break;*/
 	case EItemState::EIS_Equipped:
+		PickupWidget->SetVisibility(false);
 		//Устанавливаются свойства меша 
 		//Set Mesh propertie
 		ItemMesh->SetSimulatePhysics(false);

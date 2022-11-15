@@ -107,6 +107,10 @@ protected:
 
 	void SelectButtonReleased();
 
+	//Сбрасывает текущее экипированное оружие и экипирует TraceHitItem
+	//Drops currently equipped weapon and equips TraceHitItem
+	void SwapWeapon(AWeapon* WeaponToSwap);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -281,6 +285,11 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AWeapon> DefaultWeaponClass;
 
+	//Предмет в который попал луч трассировки от TraceForItems(может быть null)
+	//The item currently hit by our trace in TraceForItems(could be null)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	AItem* TraceHitItem;
+
 public:
 
 	//Возвращает субобъект CameraBoom
@@ -303,4 +312,5 @@ public:
 	//Увеличивает или уменьшает OverlappedItemConut и обновляет bShouldTraceForItems
 	//Adds/substracts to/from OverlappedItemConut and updates bShouldTraceForItems
 	void IncrementOverlappedItemCount(int8 Amount);
+
 };
