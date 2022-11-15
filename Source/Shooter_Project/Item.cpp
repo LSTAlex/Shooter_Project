@@ -129,6 +129,7 @@ void AItem::SetItemProperties(EItemState State)
 		//Set Mesh propertie
 		ItemMesh->SetSimulatePhysics(false);
 		ItemMesh->SetVisibility(true);
+		ItemMesh->SetEnableGravity(false);
 		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		//Устанавливает свойства сферы коллизий 
@@ -147,8 +148,11 @@ void AItem::SetItemProperties(EItemState State)
 	case EItemState::EIS_PickedUp:
 		break;*/
 	case EItemState::EIS_Equipped:
+		//Устанавливаются свойства меша 
+		//Set Mesh propertie
 		ItemMesh->SetSimulatePhysics(false);
 		ItemMesh->SetVisibility(true);
+		ItemMesh->SetEnableGravity(false);
 		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		//Устанавливает свойства сферы коллизий 
@@ -160,8 +164,26 @@ void AItem::SetItemProperties(EItemState State)
 		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		break;
-	//case EItemState::EIS_Falling:
-		//break;
+	case EItemState::EIS_Falling:
+		//Устанавливаются свойства меша 
+		//Set Mesh propertie
+		ItemMesh->SetSimulatePhysics(true);
+		ItemMesh->SetVisibility(true);
+		ItemMesh->SetEnableGravity(true);
+		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		ItemMesh->SetCollisionResponseToChannel(
+			ECollisionChannel::ECC_WorldStatic,
+			ECollisionResponse::ECR_Block);
+		//Устанавливает свойства сферы коллизий 
+		//Set AreaSphere properties
+		AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		//Устанавливает свойства бокса коллизий 
+		//Set CollisionBox properties
+		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
 	}
 }
 
