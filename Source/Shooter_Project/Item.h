@@ -70,6 +70,10 @@ protected:
 	//Sets properties of the items components based on State
 	void SetItemProperties(EItemState State);
 
+	//Вызывается когда ItemInterpTimer заканчивается
+	//Called when ItemInterpTimer is finished
+	void FinishInterping();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -120,17 +124,52 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	EItemState ItemState;
 
+	//Ассет кривой для использования с компонентом Z местоположения предмета
+	//The curve asset to use for the items's Z location when interping
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	class UCurveFloat* ItemZCurve;
+
+	//Стартовое местоположение при начале интерполяции
+	//Starting location when interping begins
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	FVector ItemInterpStartLocation;
+
+	//Местоположение перед камерой для интерполяции
+	//Target interp location in front of the camera
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	FVector CameraTargetLocation;
+
+	//True во время интерполяции
+	//True when interping
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	bool bInterping;
+
+	//Воспроизводится при начале интерполяции
+	//Plays when we start interping
+	FTimerHandle ItemInterpTimer;
+
+	//Продолжительность кривой и таймера
+	//Duration of the curve and timer
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	float ZCurveTime;
+
+	//Указатель на прерсонажа
+	//Pointer to the Character
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	class AShooterCharacter* Character;
+
 public:
 
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
-
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
-
 	FORCEINLINE UBoxComponent* GetCollisionBox() const { return CollisionBox; }
-
 	FORCEINLINE EItemState GetItemState() const { return ItemState; }
 
 	void SetItemState(EItemState State);
 
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; }
+
+	//Вызвано из класса AShooterCharacter
+	//Called from the AShooterCharacter
+	void StartItemCurve(AShooterCharacter* Char);
 };
