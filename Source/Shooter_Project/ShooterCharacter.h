@@ -90,7 +90,7 @@ protected:
 	//Трассировка для предметов, в случае если OverlappedItemCount <0
 	//Trace for items if OverlappedItemCount >0
 	void TraceForItems();
-#pragma endregion reg2	
+	
 	//призывает стандартное оружие и экипировывает его
 	//Spawn a default weapon and equip it
 	class AWeapon* SpawnDefaultWeapon();
@@ -106,7 +106,7 @@ protected:
 	void SelectButtonPressed();
 
 	void SelectButtonReleased();
-
+#pragma endregion reg2
 	//Сбрасывает текущее экипированное оружие и экипирует TraceHitItem
 	//Drops currently equipped weapon and equips TraceHitItem
 	void SwapWeapon(AWeapon* WeaponToSwap);
@@ -264,8 +264,6 @@ private:
 	//True if we should trace every fame for items
 	bool bShouldTraceForItems;
 
-#pragma endregion reg1
-
 	//Кол-во пересечённых предметов
 	//Number of overlapped AItems
 	int8 OverlappedItemConut;
@@ -279,7 +277,7 @@ private:
 	//Currently qequipped Weapon
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	AWeapon* EquippedWeapon;
-
+#pragma endregion reg1
 	//Установить это в Blueprints для стандартного класса оружия
 	//Set this in Blueprints for the default Weapon class
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
@@ -289,6 +287,16 @@ private:
 	//The item currently hit by our trace in TraceForItems(could be null)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	AItem* TraceHitItem;
+
+	//Расстояние вперёд от камеры до точки интерполяции
+	//Distance outward from the camera for the interp destination
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
+	float CameraInterpDistance;
+
+	//Расстояние вверх от камеры до точки назрачения
+	//Distance upward from the camera for the interp destination
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
+	float CameraInterpElevation;
 
 public:
 
@@ -312,5 +320,7 @@ public:
 	//Увеличивает или уменьшает OverlappedItemConut и обновляет bShouldTraceForItems
 	//Adds/substracts to/from OverlappedItemConut and updates bShouldTraceForItems
 	void IncrementOverlappedItemCount(int8 Amount);
+
+	FVector GetCameraInterpLocation();
 
 };

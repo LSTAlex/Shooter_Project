@@ -61,7 +61,11 @@ AShooterCharacter::AShooterCharacter():
 	bFireButtonPressed(false),
 	//ѕеременные трассировки предметов
 	//Item trace variable
-	bShouldTraceForItems(false)
+	bShouldTraceForItems(false),
+	//ѕеременные определ€ющие местоположение интерпол€ции перед самерой
+	//Camera interp location variables
+	CameraInterpDistance(250.f),
+	CameraInterpElevation(65.f)
 	
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -679,5 +683,14 @@ void AShooterCharacter::IncrementOverlappedItemCount(int8 Amount)
 		OverlappedItemConut += Amount;
 		bShouldTraceForItems = true;
 	}
+}
+
+FVector AShooterCharacter::GetCameraInterpLocation()
+{
+	const FVector CameraWorldLocation{ FollowCamera->GetComponentLocation() };
+	const FVector CameraForward{ FollowCamera->GetForwardVector() };
+	//Desired = CameraWorldLocation + Forward*A + Up *B
+	return CameraWorldLocation + CameraForward * CameraInterpDistance 
+		+ FVector(0.f, 0.f, CameraInterpElevation);
 }
 
