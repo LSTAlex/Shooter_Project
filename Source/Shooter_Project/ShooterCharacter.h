@@ -90,10 +90,6 @@ protected:
 	//Трассировка для предметов, в случае если OverlappedItemCount <0
 	//Trace for items if OverlappedItemCount >0
 	void TraceForItems();
-	
-	//призывает стандартное оружие и экипировывает его
-	//Spawn a default weapon and equip it
-	class AWeapon* SpawnDefaultWeapon();
 
 	//Берёт оружие и прикрепляет его к мешу
 	//Takes a weapon and attaches it to the mesh
@@ -106,7 +102,7 @@ protected:
 	void SelectButtonPressed();
 
 	void SelectButtonReleased();
-#pragma endregion reg2
+
 	//Сбрасывает текущее экипированное оружие и экипирует TraceHitItem
 	//Drops currently equipped weapon and equips TraceHitItem
 	void SwapWeapon(AWeapon* WeaponToSwap);
@@ -263,40 +259,11 @@ private:
 	//Имеет значение true если нужно делать трассировку каждый кадр для обнаружения предметов
 	//True if we should trace every fame for items
 	bool bShouldTraceForItems;
+#pragma endregion reg1
 
 	//Кол-во пересечённых предметов
 	//Number of overlapped AItems
 	int8 OverlappedItemConut;
-
-	//AItem в который попала трассировка в последнем кадре 
-	//AItem we hit last frame
-	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = Items, meta = (AllowPrivateAccess = "true"))
-	class AItem* TraceHitItemLastFrame;
-
-	//Текущее экипированное оружие
-	//Currently qequipped Weapon
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	AWeapon* EquippedWeapon;
-#pragma endregion reg1
-	//Установить это в Blueprints для стандартного класса оружия
-	//Set this in Blueprints for the default Weapon class
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<AWeapon> DefaultWeaponClass;
-
-	//Предмет в который попал луч трассировки от TraceForItems(может быть null)
-	//The item currently hit by our trace in TraceForItems(could be null)
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	AItem* TraceHitItem;
-
-	//Расстояние вперёд от камеры до точки интерполяции
-	//Distance outward from the camera for the interp destination
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
-	float CameraInterpDistance;
-
-	//Расстояние вверх от камеры до точки назрачения
-	//Distance upward from the camera for the interp destination
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
-	float CameraInterpElevation;
 
 public:
 
@@ -320,7 +287,4 @@ public:
 	//Увеличивает или уменьшает OverlappedItemConut и обновляет bShouldTraceForItems
 	//Adds/substracts to/from OverlappedItemConut and updates bShouldTraceForItems
 	void IncrementOverlappedItemCount(int8 Amount);
-
-	FVector GetCameraInterpLocation();
-
 };
