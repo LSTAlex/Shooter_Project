@@ -7,7 +7,11 @@
 
 
 // Sets default values
-AItem::AItem()
+AItem::AItem():
+	ItemName(FString("Default")),
+	ItemCount(0),
+	ItemRarity(EItemRarity::EIR_Common),
+	ItemState(EItemState::EIS_Pickup)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -39,10 +43,18 @@ void AItem::BeginPlay()
 		PickupWidget->SetVisibility(false);
 	}
 
+	//Устанавливает ActiveStars массив на основе редкости предмета
+	//Set ActiveStars array based on Item Rarity
+	SetActiveStars();
+
 	//Устанавливает пересечение для AreaSphere
 	//Setup overlap for AreaSphere
 	AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AItem::OnSphereOverlap);
 	AreaSphere->OnComponentEndOverlap.AddDynamic(this, &AItem::OnSphereEndOverlap);
+
+	//Установить св-ва предмета в зависимости от состояния предмета
+	//Set item properties based on ItemState
+	SetItemProperties(ItemState);
 }
 
 void AItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtheBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -69,10 +81,122 @@ void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 	}
 }
 
+void AItem::SetActiveStars()
+{
+	//0 не используется 
+	//0 element isn't used
+	for (size_t i = 0; i <= 5; i++)
+	{
+		ActiveStars.Add(false);
+	}
+
+	switch (ItemRarity)
+	{
+	case EItemRarity::EIR_Damaged:
+		ActiveStars[1] = true;
+		break;
+	case EItemRarity::EIR_Common:
+		ActiveStars[1] = true;
+		ActiveStars[2] = true;
+		break;
+	case EItemRarity::EIR_Uncommon:
+		ActiveStars[1] = true;
+		ActiveStars[2] = true;
+		ActiveStars[3] = true;
+		break;
+	case EItemRarity::EIR_Rare:
+		ActiveStars[1] = true;
+		ActiveStars[2] = true;
+		ActiveStars[3] = true;
+		ActiveStars[4] = true;
+		break;
+	case EItemRarity::EIR_Legendary:
+		ActiveStars[1] = true;
+		ActiveStars[2] = true;
+		ActiveStars[3] = true;
+		ActiveStars[4] = true;
+		ActiveStars[5] = true;
+		break;
+	}
+}
+
+void AItem::SetItemProperties(EItemState State)
+{
+	switch (State)
+	{
+	case EItemState::EIS_Pickup:
+		//Устанавливаются свойства меша 
+		//Set Mesh propertie
+		ItemMesh->SetSimulatePhysics(false);
+		ItemMesh->SetVisibility(true);
+		ItemMesh->SetEnableGravity(false);
+		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		//Устанавливает свойства сферы коллизий 
+		//Set AreaSphere properties
+		AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		//Устанавливает свойства бокса коллизий 
+		//Set CollisionBox properties
+		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, 
+			ECollisionResponse::ECR_Block);
+		CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		break;
+	/*case EItemState::EIS_EquipInterping:
+		break;
+	case EItemState::EIS_PickedUp:
+		break;*/
+	case EItemState::EIS_Equipped:
+		PickupWidget->SetVisibility(false);
+		//Устанавливаются свойства меша 
+		//Set Mesh propertie
+		ItemMesh->SetSimulatePhysics(false);
+		ItemMesh->SetVisibility(true);
+		ItemMesh->SetEnableGravity(false);
+		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		//Устанавливает свойства сферы коллизий 
+		//Set AreaSphere properties
+		AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		//Устанавливает свойства бокса коллизий 
+		//Set CollisionBox properties
+		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+	case EItemState::EIS_Falling:
+		//Устанавливаются свойства меша 
+		//Set Mesh propertie
+		ItemMesh->SetSimulatePhysics(true);
+		ItemMesh->SetVisibility(true);
+		ItemMesh->SetEnableGravity(true);
+		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		ItemMesh->SetCollisionResponseToChannel(
+			ECollisionChannel::ECC_WorldStatic,
+			ECollisionResponse::ECR_Block);
+		//Устанавливает свойства сферы коллизий 
+		//Set AreaSphere properties
+		AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		//Устанавливает свойства бокса коллизий 
+		//Set CollisionBox properties
+		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+	}
+}
+
 // Called every frame
 void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
 
+void AItem::SetItemState(EItemState State)
+{
+	ItemState = State;
+	SetItemProperties(State);
 }
 

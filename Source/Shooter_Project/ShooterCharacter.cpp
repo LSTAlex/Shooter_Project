@@ -13,6 +13,9 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Item.h"
 #include "Components/WidgetComponent.h"
+#include "Weapon.h"
+#include "Components/SphereComponent.h"
+#include "Components/BoxComponent.h"
 
 
 // Sets default values
@@ -110,6 +113,11 @@ void AShooterCharacter::BeginPlay()
 		CameraDefaultFOV = GetFollowCamera()->FieldOfView;
 		CameraCurrentFOV = CameraDefaultFOV;
 	}
+
+	//ѕризыв стандартного оружи€ и  его прикрепление к мешу
+	//Spawn the default weapon and attach it to the mesh
+	EquipWeapon(SpawnDefaultWeapon());
+	
 }
 
 void AShooterCharacter::MoveForward(float Value)
@@ -436,6 +444,10 @@ bool AShooterCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector O
 			End,
 			ECollisionChannel::ECC_Visibility);
 
+		//проверка трассировки при пересечении AreaSphere
+		//check line trace after overlapping AreaSphere
+		//DrawDebugLine(GetWorld(),Start,End,FColor::Red,false, 2.f);
+
 		if (OutHitResult.bBlockingHit)
 		{
 			OutHitLocation = OutHitResult.Location;
@@ -455,15 +467,97 @@ void AShooterCharacter::TraceForItems()
 		TraceUnderCrosshairs(ItemTraceResult, HitLocation);
 		if (ItemTraceResult.bBlockingHit)
 		{
-			AItem* HitItem = Cast<AItem>(ItemTraceResult.Actor);
-			if (HitItem && HitItem->GetPickupWidget())
+			TraceHitItem = Cast<AItem>(ItemTraceResult.Actor);
+			if (TraceHitItem && TraceHitItem->GetPickupWidget())
 			{
 				//показать Widget поднимаемого предмета
 				//Show Item's pickup Widget
-				HitItem->GetPickupWidget()->SetVisibility(true);
+				TraceHitItem->GetPickupWidget()->SetVisibility(true);
 			}
+
+			if (TraceHitItemLastFrame)
+			{
+				if (TraceHitItem != TraceHitItemLastFrame)
+				{
+					//трассировка попала в другой AItem в этом кадре или AItem нет 
+					//We are hitting a different AItem this frame or AItem is null
+					TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+				}
+			}
+			//хранитс€ ссылка на предмет найденный при помощи трассировки дл€ следующего кадра 
+			//storage a reference to HitItem for next frame
+			TraceHitItemLastFrame = TraceHitItem;
 		}
 	}
+	else if (TraceHitItemLastFrame)
+	{
+		//Ќикакие предметы больше не пересечены, не нужно показывать PickupWidget предметов
+		//No longer overlapping any items. Item last frame should not show PickupWidget
+		TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+	}
+}
+
+AWeapon* AShooterCharacter::SpawnDefaultWeapon()
+{
+	//ѕроверка переменной TSubclassOf
+	//Check the TSubclassOf variable
+	if (DefaultWeaponClass)
+	{
+		//ѕризыв оружи€
+		//Spawn the Weapon
+		return GetWorld()->SpawnActor<AWeapon>(DefaultWeaponClass);
+	}
+	return nullptr;
+}
+
+void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip)
+{
+	if (WeaponToEquip)
+	{
+		
+
+		const USkeletalMeshSocket* HandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
+		if (HandSocket)
+		{
+			//ѕрикрепление оружи€ к сокету руки RightHandSocket
+			//Attach the weapon to the hand socket RightHandSocket
+			HandSocket->AttachActor(WeaponToEquip, GetMesh());
+		}
+		EquippedWeapon = WeaponToEquip;
+		EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
+	}
+}
+
+void AShooterCharacter::DropWeapon()
+{
+	if (EquippedWeapon)
+	{
+		FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, true);
+		EquippedWeapon->GetItemMesh()->DetachFromComponent(DetachmentTransformRules);
+		EquippedWeapon->SetItemState(EItemState::EIS_Falling);
+		EquippedWeapon->ThrowWeapon();
+	}
+}
+
+void AShooterCharacter::SelectButtonPressed()
+{
+	if (TraceHitItem)
+	{
+		auto TraceHitWeapon = Cast<AWeapon>(TraceHitItem);
+		SwapWeapon(TraceHitWeapon);
+	}
+}
+
+void AShooterCharacter::SelectButtonReleased()
+{
+}
+
+void AShooterCharacter::SwapWeapon(AWeapon* WeaponToSwap)
+{
+	DropWeapon();
+	EquipWeapon(WeaponToSwap);
+	TraceHitItem = nullptr;
+	TraceHitItemLastFrame = nullptr;
 }
 
 bool AShooterCharacter::GetBeamEndLocation(
@@ -541,7 +635,6 @@ void AShooterCharacter::Tick(float DeltaTime)
 	//проверка OverlappedItemCount, затем трассировка дл€ предметов
 	//Check OverlappedItemCount, then trace for items
 	TraceForItems();
-
 }
 
 // Called to bind functionality to input
@@ -568,6 +661,10 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		&AShooterCharacter::AimingButtonPressed);
 	PlayerInputComponent->BindAction("AimingButton", IE_Released, this,
 		&AShooterCharacter::AimingButtonReleased);
+	PlayerInputComponent->BindAction("Select", IE_Pressed, this,
+		&AShooterCharacter::SelectButtonPressed);
+	PlayerInputComponent->BindAction("Select", IE_Released, this,
+		&AShooterCharacter::SelectButtonReleased);
 }
 
 void AShooterCharacter::IncrementOverlappedItemCount(int8 Amount)

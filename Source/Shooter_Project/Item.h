@@ -6,6 +6,29 @@
 #include "GameFramework/Actor.h"
 #include "Item.generated.h"
 
+UENUM(BlueprintType)
+enum class EItemRarity : uint8
+{
+	EIR_Damaged UMETA(DisplayName = "Damaged"),
+	EIR_Common UMETA(DisplayName = "Common"),
+	EIR_Uncommon UMETA(DisplayName = "Uncommon"),
+	EIR_Rare UMETA(DisplayName = "Rare"),
+	EIR_Legendary UMETA(DisplayName = "Legendary"),	
+	EIR_MAX UMETA(DisplayName = "DefaultMAX")
+};
+
+UENUM(BlueprintType)
+enum class EItemState : uint8
+{
+	EIS_Pickup UMETA(DisplayName = "Pickup"),
+	EIS_EquipInterping UMETA(DisplayName = "EquipInterping"),
+	EIS_PickedUp UMETA(DisplayName = "PickedUp"),
+	EIS_Equipped UMETA(DisplayName = "Equipped"),
+	EIS_Falling UMETA(DisplayName = "Falling"),
+	EIS_MAX UMETA(DisplayName = "DefaultMAX")
+};
+
+
 UCLASS()
 class SHOOTER_PROJECT_API AItem : public AActor
 {
@@ -39,6 +62,14 @@ protected:
 		UPrimitiveComponent* OtherComp,
 		int32 OtheBodyIndex);
 
+	//Устанавливает массив ActiveStars в зависимости от редкости
+	//Set the ActiveStars array of bools based on rarity
+	void SetActiveStars();
+
+	//Устанавливает свойства компонента предмета в зависимости от состояния
+	//Sets properties of the items components based on State
+	void SetItemProperties(EItemState State);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -65,8 +96,41 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	class USphereComponent* AreaSphere;
 
+	//Название, которое появляется на PickupWidget
+	//The name which appears on the PickupWidget
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	FString ItemName;
+
+	//ItemCount (патроны и т.д.)
+	//ItemCount (ammo, etc.)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	int32 ItemCount;
+
+	//Редкость предмета определяет кол-во звёзд в PickupWidget
+	//Item rarity - determines number of stars in PickupWidget
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	EItemRarity ItemRarity;
+
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	TArray<bool> ActiveStars;
+
+	//Состояние предмета
+	//State of the Items
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	EItemState ItemState;
+
 public:
 
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
 
+	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
+
+	FORCEINLINE UBoxComponent* GetCollisionBox() const { return CollisionBox; }
+
+	FORCEINLINE EItemState GetItemState() const { return ItemState; }
+
+	void SetItemState(EItemState State);
+
+	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; }
 };

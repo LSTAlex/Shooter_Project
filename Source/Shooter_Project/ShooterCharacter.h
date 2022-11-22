@@ -67,7 +67,6 @@ protected:
 	//устанавливает базовую скоость вращения в зависимости от прицеливания
 	//Set BaseTurnRate and BaseLookUpRate based on aiming
 	void SetLookRates();
-#pragma endregion reg2
 
 	void CalculateCrosshairSpread(float DeltaTime);
 
@@ -91,6 +90,26 @@ protected:
 	//Трассировка для предметов, в случае если OverlappedItemCount <0
 	//Trace for items if OverlappedItemCount >0
 	void TraceForItems();
+#pragma endregion reg2	
+	//призывает стандартное оружие и экипировывает его
+	//Spawn a default weapon and equip it
+	class AWeapon* SpawnDefaultWeapon();
+
+	//Берёт оружие и прикрепляет его к мешу
+	//Takes a weapon and attaches it to the mesh
+	void EquipWeapon(AWeapon* WeaponToEquip);
+
+	//Открепляет оружие и позволяет ему падать на землю
+	//Detach weapon and let it fall to the ground
+	void DropWeapon();
+
+	void SelectButtonPressed();
+
+	void SelectButtonReleased();
+
+	//Сбрасывает текущее экипированное оружие и экипирует TraceHitItem
+	//Drops currently equipped weapon and equips TraceHitItem
+	void SwapWeapon(AWeapon* WeaponToSwap);
 
 public:	
 	// Called every frame
@@ -244,10 +263,32 @@ private:
 	//Имеет значение true если нужно делать трассировку каждый кадр для обнаружения предметов
 	//True if we should trace every fame for items
 	bool bShouldTraceForItems;
+
 #pragma endregion reg1
+
 	//Кол-во пересечённых предметов
 	//Number of overlapped AItems
 	int8 OverlappedItemConut;
+
+	//AItem в который попала трассировка в последнем кадре 
+	//AItem we hit last frame
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = Items, meta = (AllowPrivateAccess = "true"))
+	class AItem* TraceHitItemLastFrame;
+
+	//Текущее экипированное оружие
+	//Currently qequipped Weapon
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	AWeapon* EquippedWeapon;
+
+	//Установить это в Blueprints для стандартного класса оружия
+	//Set this in Blueprints for the default Weapon class
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AWeapon> DefaultWeaponClass;
+
+	//Предмет в который попал луч трассировки от TraceForItems(может быть null)
+	//The item currently hit by our trace in TraceForItems(could be null)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	AItem* TraceHitItem;
 
 public:
 
@@ -271,4 +312,5 @@ public:
 	//Увеличивает или уменьшает OverlappedItemConut и обновляет bShouldTraceForItems
 	//Adds/substracts to/from OverlappedItemConut and updates bShouldTraceForItems
 	void IncrementOverlappedItemCount(int8 Amount);
+
 };
