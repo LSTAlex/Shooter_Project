@@ -149,9 +149,25 @@ void AItem::SetItemProperties(EItemState State)
 			ECollisionResponse::ECR_Block);
 		CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		break;
-	/*case EItemState::EIS_EquipInterping:
+	case EItemState::EIS_EquipInterping:
+		PickupWidget->SetVisibility(false);
+		//Устанавливаются свойства меша 
+		//Set Mesh propertie
+		ItemMesh->SetSimulatePhysics(false);
+		ItemMesh->SetVisibility(true);
+		ItemMesh->SetEnableGravity(false);
+		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		//Устанавливает свойства сферы коллизий 
+		//Set AreaSphere properties
+		AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		//Устанавливает свойства бокса коллизий 
+		//Set CollisionBox properties
+		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		break;
-	case EItemState::EIS_PickedUp:
+	/*case EItemState::EIS_PickedUp:
 		break;*/
 	case EItemState::EIS_Equipped:
 		PickupWidget->SetVisibility(false);
