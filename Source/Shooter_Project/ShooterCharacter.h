@@ -235,7 +235,7 @@ private:
 	//компонент стрельбы для разброса перекрестия
 	//Shooting component for crosshairs spread
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
-		float CrosshairShootingFactor;
+	float CrosshairShootingFactor;
 
 
 	float ShootTimeDuration;
@@ -294,7 +294,7 @@ private:
 	//Расстояние вверх от камеры до точки назрачения
 	//Distance upward from the camera for the interp destination
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
-		float CameraInterpElevation;
+	float CameraInterpElevation;
 
 public:
 

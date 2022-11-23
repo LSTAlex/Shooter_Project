@@ -74,12 +74,17 @@ protected:
 	//Called when ItemInterpTimer is finished
 	void FinishInterping();
 
+	//”правл€ет интерпол€цией предмета, который находитс€ в состо€нии EquipInterping
+	//Handles item interpolation when in the EquipInterping
+	void ItemInterp(float DeltaTime);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 private:
 
+#pragma region reg1
 	//—келетный меш дл€ предмета
 	//Skeletal mesh for the item
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
@@ -123,7 +128,7 @@ private:
 	//State of the Items
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	EItemState ItemState;
-
+#pragma endregion reg1
 	//јссет кривой дл€ использовани€ с компонентом Z местоположени€ предмета
 	//The curve asset to use for the items's Z location when interping
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))

@@ -151,19 +151,16 @@ void AItem::SetItemProperties(EItemState State)
 		break;
 	case EItemState::EIS_EquipInterping:
 		PickupWidget->SetVisibility(false);
-		//Устанавливаются свойства меша 
-		//Set Mesh propertie
+		// Set mesh properties
 		ItemMesh->SetSimulatePhysics(false);
-		ItemMesh->SetVisibility(true);
 		ItemMesh->SetEnableGravity(false);
+		ItemMesh->SetVisibility(true);
 		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		//Устанавливает свойства сферы коллизий 
-		//Set AreaSphere properties
+		// Set AreaSphere properties
 		AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		//Устанавливает свойства бокса коллизий 
-		//Set CollisionBox properties
+		// Set CollisionBox properties
 		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		break;
@@ -212,9 +209,40 @@ void AItem::SetItemProperties(EItemState State)
 
 void AItem::FinishInterping()
 {
+	bInterping = false;
 	if (Character)
 	{
 		Character->GetPickupItem(this);
+	}
+}
+
+void AItem::ItemInterp(float DeltaTime)
+{
+	if (!bInterping) return;
+
+	if (Character && ItemZCurve)
+	{
+		//Прошедшее время с момента когда был запущен ItemInterpTimer
+		//Elapsed time since we started ItemInterpTimer
+		const float ElapsedTime = GetWorldTimerManager().GetTimerElapsed(ItemInterpTimer);
+		//Получение значения кривой, соответствующее ElapsedTime
+		//Get curve value corresponding to ElapsedTime
+		const float CurveValue = ItemZCurve->GetFloatValue(ElapsedTime);
+		//Получение исходного пестоположения, когда кривая начинается
+		//Get the item's initial location when the curve started
+		FVector ItemLocation = ItemInterpStartLocation;
+		//Получение местоположения перед камерой
+		//Get location in front of the camera
+		const FVector CameraInterpLocation{ Character->GetCameraInterpLocation() };
+		//Вектор от предмета до точки интерполяции находящейся перед камерой X и Y обнулены
+		//Vector from Item to Camera interp location. X and Y are zeroed out 
+		const FVector ItemToCamera{ FVector(0.f, 0.f, (CameraInterpLocation - ItemLocation).Z) };
+		//Фактор масштаба для умножения CurveValue
+		//Scale factor to multiply with CurveValue 
+		const float DeltaZ = ItemToCamera.Size();
+
+		ItemLocation.Z += CurveValue * DeltaZ;
+		SetActorLocation(ItemLocation, true, nullptr, ETeleportType::TeleportPhysics);
 	}
 }
 
@@ -222,6 +250,7 @@ void AItem::FinishInterping()
 void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	ItemInterp(DeltaTime);
 }
 
 void AItem::SetItemState(EItemState State)
@@ -232,17 +261,17 @@ void AItem::SetItemState(EItemState State)
 
 void AItem::StartItemCurve(AShooterCharacter* Char)
 {
-	//Хранит указатель на персонажа 
-	//Store a handle to the Character
+	// Store a handle to the Character
 	Character = Char;
-
-	//сохраняет исходное положение предмета
-	//Store initial location of the Item
+	// Store initial location of the Item
 	ItemInterpStartLocation = GetActorLocation();
-
 	bInterping = true;
 	SetItemState(EItemState::EIS_EquipInterping);
 
-	GetWorldTimerManager().SetTimer(ItemInterpTimer, this, &AItem::FinishInterping, ZCurveTime);
+	GetWorldTimerManager().SetTimer(
+		ItemInterpTimer,
+		this,
+		&AItem::FinishInterping,
+		ZCurveTime);
 }
 

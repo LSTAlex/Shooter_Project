@@ -62,6 +62,7 @@ AShooterCharacter::AShooterCharacter():
 	//ѕеременные трассировки предметов
 	//Item trace variable
 	bShouldTraceForItems(false),
+	OverlappedItemConut(0),
 	//ѕеременные определ€ющие местоположение интерпол€ции перед самерой
 	//Camera interp location variables
 	CameraInterpDistance(250.f),
@@ -547,8 +548,7 @@ void AShooterCharacter::SelectButtonPressed()
 {
 	if (TraceHitItem)
 	{
-		auto TraceHitWeapon = Cast<AWeapon>(TraceHitItem);
-		SwapWeapon(TraceHitWeapon);
+		TraceHitItem->StartItemCurve(this);
 	}
 }
 
@@ -689,8 +689,8 @@ FVector AShooterCharacter::GetCameraInterpLocation()
 {
 	const FVector CameraWorldLocation{ FollowCamera->GetComponentLocation() };
 	const FVector CameraForward{ FollowCamera->GetForwardVector() };
-	//Desired = CameraWorldLocation + Forward*A + Up *B
-	return CameraWorldLocation + CameraForward * CameraInterpDistance 
+	// Desired = CameraWorldLocation + Forward * A + Up * B
+	return CameraWorldLocation + CameraForward * CameraInterpDistance
 		+ FVector(0.f, 0.f, CameraInterpElevation);
 }
 
