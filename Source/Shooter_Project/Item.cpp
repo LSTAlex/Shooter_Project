@@ -3,6 +3,7 @@
 #include "Components/WidgetComponent.h"
 #include "Components/SphereComponent.h"
 #include "ShooterCharacter.h"
+#include "Camera/CameraComponent.h"
 
 
 
@@ -19,7 +20,8 @@ AItem::AItem():
 	CameraTargetLocation(FVector(0.f)),
 	bInterping(false),
 	ItemInterpX(0.f),
-	ItemInterpY(0.f)
+	ItemInterpY(0.f),
+	InterpInitialYawOffset(0.f)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -266,6 +268,14 @@ void AItem::ItemInterp(float DeltaTime)
 
 		ItemLocation.Z += CurveValue * DeltaZ;
 		SetActorLocation(ItemLocation, true, nullptr, ETeleportType::TeleportPhysics);
+
+		//Вращение камеры в данном кадре
+		//Camera rotation this frame
+		const FRotator CameraRotation{ Character->GetFollowCamera()->GetComponentRotation() };
+		//Вращение камеры плюс исходное смещение рысканья
+		//Camera rotation plus initial Yaw offset
+		FRotator ItemRotation{ 0.f,CameraRotation.Yaw + InterpInitialYawOffset, 0.f };
+		SetActorRotation(ItemRotation, ETeleportType::TeleportPhysics);
 	}
 }
 
@@ -296,5 +306,15 @@ void AItem::StartItemCurve(AShooterCharacter* Char)
 		this,
 		&AItem::FinishInterping,
 		ZCurveTime);
+
+	//Получение исходного рысканья камеры
+	//Get initial Yaw of the Camera
+	const float CameraRotarionYaw{ Character->GetFollowCamera()->GetComponentRotation().Yaw };
+	//Получение исходного рысканья Предмета
+	//Get initial Yaw of the Item
+	const float ItemRotationYaw{ GetActorRotation().Yaw };
+	//Исходное смещение рысканья между камерой и предметом 
+	//Initial Yaw offset between Camera and Item
+	InterpInitialYawOffset = ItemRotationYaw - CameraRotarionYaw;
 }
 

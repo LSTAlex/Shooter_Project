@@ -168,6 +168,10 @@ private:
 	float ItemInterpX;
 	float ItemInterpY;
 
+	//—мещение исходного рыскань€ между камерой и подвеграющимс€ интерпол€ции объектом
+	//Initial Yaw offset between the camera and the interping item
+	float InterpInitialYawOffset;
+
 public:
 
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
