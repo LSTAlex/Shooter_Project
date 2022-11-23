@@ -218,6 +218,8 @@ void AItem::FinishInterping()
 	{
 		Character->GetPickupItem(this);
 	}
+	//Возвращает обратно нормальный масштаб
+	SetActorScale3D(FVector(1.f));
 }
 
 void AItem::ItemInterp(float DeltaTime)
@@ -274,8 +276,15 @@ void AItem::ItemInterp(float DeltaTime)
 		const FRotator CameraRotation{ Character->GetFollowCamera()->GetComponentRotation() };
 		//Вращение камеры плюс исходное смещение рысканья
 		//Camera rotation plus initial Yaw offset
-		FRotator ItemRotation{ 0.f,CameraRotation.Yaw + InterpInitialYawOffset, 0.f };
+		FRotator ItemRotation{ 0.f,CameraRotation.Yaw + InterpInitialYawOffset + 45.f, 0.f };
 		SetActorRotation(ItemRotation, ETeleportType::TeleportPhysics);
+
+		if (ItemScaleCurve)
+		{
+			const float ScaleCurveValue = ItemScaleCurve->GetFloatValue(ElapsedTime);
+			SetActorScale3D(FVector(ScaleCurveValue, ScaleCurveValue, ScaleCurveValue));
+		}
+		
 	}
 }
 
