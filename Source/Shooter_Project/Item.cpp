@@ -17,7 +17,9 @@ AItem::AItem():
 	ZCurveTime(0.7f),
 	ItemInterpStartLocation(FVector(0.f)),
 	CameraTargetLocation(FVector(0.f)),
-	bInterping(false)
+	bInterping(false),
+	ItemInterpX(0.f),
+	ItemInterpY(0.f)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -240,6 +242,27 @@ void AItem::ItemInterp(float DeltaTime)
 		//Фактор масштаба для умножения CurveValue
 		//Scale factor to multiply with CurveValue 
 		const float DeltaZ = ItemToCamera.Size();
+
+		const FVector CurrentLocation{ GetActorLocation() };
+
+		//Интерполированное значение Х
+		//Interpolated X value
+		const float ItemInterpXValue = FMath::FInterpTo(
+			CurrentLocation.X,
+			CameraInterpLocation.X,
+			DeltaTime,
+			30.f);
+
+		//Интерполированное значение Y
+		//Interpolated Y value
+		const float ItemInterpYValue = FMath::FInterpTo(
+			CurrentLocation.Y,
+			CameraInterpLocation.Y,
+			DeltaTime,
+			30.f);
+
+		ItemLocation.X = ItemInterpXValue;
+		ItemLocation.Y = ItemInterpYValue;
 
 		ItemLocation.Z += CurveValue * DeltaZ;
 		SetActorLocation(ItemLocation, true, nullptr, ETeleportType::TeleportPhysics);
