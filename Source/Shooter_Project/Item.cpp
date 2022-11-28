@@ -3,6 +3,7 @@
 #include "Components/WidgetComponent.h"
 #include "Components/SphereComponent.h"
 #include "ShooterCharacter.h"
+#include "Camera/CameraComponent.h"
 
 
 
@@ -11,7 +12,16 @@ AItem::AItem():
 	ItemName(FString("Default")),
 	ItemCount(0),
 	ItemRarity(EItemRarity::EIR_Common),
-	ItemState(EItemState::EIS_Pickup)
+	ItemState(EItemState::EIS_Pickup),
+	//Переменные интерполяции предмета
+	//Item interp variables
+	ZCurveTime(0.7f),
+	ItemInterpStartLocation(FVector(0.f)),
+	CameraTargetLocation(FVector(0.f)),
+	bInterping(false),
+	ItemInterpX(0.f),
+	ItemInterpY(0.f),
+	InterpInitialYawOffset(0.f)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -143,9 +153,22 @@ void AItem::SetItemProperties(EItemState State)
 			ECollisionResponse::ECR_Block);
 		CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		break;
-	/*case EItemState::EIS_EquipInterping:
+	case EItemState::EIS_EquipInterping:
+		PickupWidget->SetVisibility(false);
+		// Set mesh properties
+		ItemMesh->SetSimulatePhysics(false);
+		ItemMesh->SetEnableGravity(false);
+		ItemMesh->SetVisibility(true);
+		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		// Set AreaSphere properties
+		AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		// Set CollisionBox properties
+		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		break;
-	case EItemState::EIS_PickedUp:
+	/*case EItemState::EIS_PickedUp:
 		break;*/
 	case EItemState::EIS_Equipped:
 		PickupWidget->SetVisibility(false);
@@ -188,15 +211,119 @@ void AItem::SetItemProperties(EItemState State)
 	}
 }
 
+void AItem::FinishInterping()
+{
+	bInterping = false;
+	if (Character)
+	{
+		Character->GetPickupItem(this);
+	}
+	//Возвращает обратно нормальный масштаб
+	SetActorScale3D(FVector(1.f));
+}
+
+void AItem::ItemInterp(float DeltaTime)
+{
+	if (!bInterping) return;
+
+	if (Character && ItemZCurve)
+	{
+		//Прошедшее время с момента когда был запущен ItemInterpTimer
+		//Elapsed time since we started ItemInterpTimer
+		const float ElapsedTime = GetWorldTimerManager().GetTimerElapsed(ItemInterpTimer);
+		//Получение значения кривой, соответствующее ElapsedTime
+		//Get curve value corresponding to ElapsedTime
+		const float CurveValue = ItemZCurve->GetFloatValue(ElapsedTime);
+		//Получение исходного пестоположения, когда кривая начинается
+		//Get the item's initial location when the curve started
+		FVector ItemLocation = ItemInterpStartLocation;
+		//Получение местоположения перед камерой
+		//Get location in front of the camera
+		const FVector CameraInterpLocation{ Character->GetCameraInterpLocation() };
+		//Вектор от предмета до точки интерполяции находящейся перед камерой X и Y обнулены
+		//Vector from Item to Camera interp location. X and Y are zeroed out 
+		const FVector ItemToCamera{ FVector(0.f, 0.f, (CameraInterpLocation - ItemLocation).Z) };
+		//Фактор масштаба для умножения CurveValue
+		//Scale factor to multiply with CurveValue 
+		const float DeltaZ = ItemToCamera.Size();
+
+		const FVector CurrentLocation{ GetActorLocation() };
+
+		//Интерполированное значение Х
+		//Interpolated X value
+		const float ItemInterpXValue = FMath::FInterpTo(
+			CurrentLocation.X,
+			CameraInterpLocation.X,
+			DeltaTime,
+			30.f);
+
+		//Интерполированное значение Y
+		//Interpolated Y value
+		const float ItemInterpYValue = FMath::FInterpTo(
+			CurrentLocation.Y,
+			CameraInterpLocation.Y,
+			DeltaTime,
+			30.f);
+
+		ItemLocation.X = ItemInterpXValue;
+		ItemLocation.Y = ItemInterpYValue;
+
+		ItemLocation.Z += CurveValue * DeltaZ;
+		SetActorLocation(ItemLocation, true, nullptr, ETeleportType::TeleportPhysics);
+
+		//Вращение камеры в данном кадре
+		//Camera rotation this frame
+		const FRotator CameraRotation{ Character->GetFollowCamera()->GetComponentRotation() };
+		//Вращение камеры плюс исходное смещение рысканья
+		//Camera rotation plus initial Yaw offset
+		FRotator ItemRotation{ 0.f,CameraRotation.Yaw + InterpInitialYawOffset + 45.f, 0.f };
+		SetActorRotation(ItemRotation, ETeleportType::TeleportPhysics);
+
+		if (ItemScaleCurve)
+		{
+			const float ScaleCurveValue = ItemScaleCurve->GetFloatValue(ElapsedTime);
+			SetActorScale3D(FVector(ScaleCurveValue, ScaleCurveValue, ScaleCurveValue));
+		}
+		
+	}
+}
+
 // Called every frame
 void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	ItemInterp(DeltaTime);
 }
 
 void AItem::SetItemState(EItemState State)
 {
 	ItemState = State;
 	SetItemProperties(State);
+}
+
+void AItem::StartItemCurve(AShooterCharacter* Char)
+{
+	// Store a handle to the Character
+	Character = Char;
+	// Store initial location of the Item
+	ItemInterpStartLocation = GetActorLocation();
+	bInterping = true;
+	SetItemState(EItemState::EIS_EquipInterping);
+
+	GetWorldTimerManager().SetTimer(
+		ItemInterpTimer,
+		this,
+		&AItem::FinishInterping,
+		ZCurveTime);
+
+	//Получение исходного рысканья камеры
+	//Get initial Yaw of the Camera
+	const float CameraRotarionYaw{ Character->GetFollowCamera()->GetComponentRotation().Yaw };
+	//Получение исходного рысканья Предмета
+	//Get initial Yaw of the Item
+	const float ItemRotationYaw{ GetActorRotation().Yaw };
+	//Исходное смещение рысканья между камерой и предметом 
+	//Initial Yaw offset between Camera and Item
+	InterpInitialYawOffset = ItemRotationYaw - CameraRotarionYaw;
 }
 
