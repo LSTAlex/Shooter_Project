@@ -4,6 +4,14 @@
 #include "GameFramework/Character.h"
 #include "ShooterCharacter.generated.h"
 
+UENUM(BlueprintType)
+enum class EAmmoType : uint8
+{
+	EAT_9mm UMETA(DisplayName = "9mm"),
+	EAT_AR UMETA(DisplayName = "Assault Rifle"),
+	EAT_MAX UMETA(DisplayName = "DefaultMAX")
+};
+
 UCLASS()
 class SHOOTER_PROJECT_API AShooterCharacter : public ACharacter
 {
@@ -108,6 +116,10 @@ protected:
 	//Сбрасывает текущее экипированное оружие и экипирует TraceHitItem
 	//Drops currently equipped weapon and equips TraceHitItem
 	void SwapWeapon(AWeapon* WeaponToSwap);
+
+	//Инифиализация карты патронов значениями патронов
+	//Initialize the Ammo Map with ammo values
+	void InitializeAmmoMap();
 
 public:
 	// Called every frame
@@ -279,22 +291,37 @@ private:
 	//Установить это в Blueprints для стандартного класса оружия
 	//Set this in Blueprints for the default Weapon class
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
-		TSubclassOf<AWeapon> DefaultWeaponClass;
+	TSubclassOf<AWeapon> DefaultWeaponClass;
 
 	//Предмет в который попал луч трассировки от TraceForItems(может быть null)
 	//The item currently hit by our trace in TraceForItems(could be null)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
-		AItem* TraceHitItem;
+	AItem* TraceHitItem;
 
 	//Расстояние вперёд от камеры до точки интерполяции
 	//Distance outward from the camera for the interp destination
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
-		float CameraInterpDistance;
+	float CameraInterpDistance;
 
 	//Расстояние вверх от камеры до точки назрачения
 	//Distance upward from the camera for the interp destination
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
 	float CameraInterpElevation;
+
+	//Карта для отслеживания патронов разных типов
+	//Map to keep track of ammo of the different ammo types
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
+	TMap<EAmmoType, int32> AmmoMap;
+
+	//Стартовое кол-во патронов 9мм
+	//Starting amount 9mm ammo
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess = "true"))
+	int32 Starting9mmAmmo;
+
+	//Стартовое кол-во патронов для винтовки
+	//Starting amount Assault Rifle ammo
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess = "true"))
+	int32 StartingARAmmo;
 
 public:
 
