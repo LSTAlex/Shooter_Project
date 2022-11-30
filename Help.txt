@@ -10,5 +10,8 @@ V
 V				
 V				
 V				
-V				
+V	
+
+2. При git merge убедить что Shooter_ProjectGameModeBaseBP установлен в качестве 
+PlayerController Class(World Settings). 
 
