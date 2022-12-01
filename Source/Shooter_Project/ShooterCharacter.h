@@ -121,6 +121,10 @@ protected:
 	//Initialize the Ammo Map with ammo values
 	void InitializeAmmoMap();
 
+	//ѕровер€ет наличие потронов в оружие
+	//Check to make sure our weapon has ammo
+	bool WeaponHasAmmo();
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -287,7 +291,7 @@ private:
 	//Currently qequipped Weapon
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 		AWeapon* EquippedWeapon;
-#pragma endregion reg1
+
 	//”становить это в Blueprints дл€ стандартного класса оружи€
 	//Set this in Blueprints for the default Weapon class
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
@@ -307,7 +311,7 @@ private:
 	//Distance upward from the camera for the interp destination
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
 	float CameraInterpElevation;
-
+#pragma endregion reg1
 	// арта дл€ отслеживани€ патронов разных типов
 	//Map to keep track of ammo of the different ammo types
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))

@@ -200,15 +200,17 @@ void AShooterCharacter::LookUp(float Value)
 
 void AShooterCharacter::FireWeapon()
 {
+	if (EquippedWeapon == nullptr)return;
+
 	if (FireSound)
 	{
 		UGameplayStatics::PlaySound2D(this,FireSound);
 	}
 
-	const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
+	const USkeletalMeshSocket* BarrelSocket = EquippedWeapon->GetItemMesh()->GetSocketByName("BarrelSocket");
 	if (BarrelSocket)
 	{
-		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
+		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
 
 		if (MuzzelFlash)
 		{
@@ -248,6 +250,13 @@ void AShooterCharacter::FireWeapon()
 	{
 		AnimInstance->Montage_Play(HipFireMontage);
 		AnimInstance->Montage_JumpToSection(FName("StartFire"));
+	}
+
+	if (EquippedWeapon)
+	{
+		//Вычитает 1 из кол-ва патронов в оружии
+		//Subtract 1 from the weapon ammo
+		EquippedWeapon->DecrementAmmo();
 	}
 
 	//запускает таймер BulletFire для перекрестий
@@ -386,8 +395,12 @@ void AShooterCharacter::StartCrosshairBulletFire()
 
 void AShooterCharacter::FireButtonPressed()
 {
-	bFireButtonPressed = true;
-	StartFireTimer();
+	if (WeaponHasAmmo())
+	{
+		bFireButtonPressed = true;
+		StartFireTimer();
+	}
+
 }
 
 void AShooterCharacter::FireButtonReleased()
@@ -410,11 +423,14 @@ void AShooterCharacter::StartFireTimer()
 
 void AShooterCharacter::AutoFireReset()
 {
-	bShouldFire = true;
-
-	if (bFireButtonPressed)
+	if (WeaponHasAmmo())
 	{
-		StartFireTimer();
+		bShouldFire = true;
+
+		if (bFireButtonPressed)
+		{
+			StartFireTimer();
+		}
 	}
 }
 
@@ -573,6 +589,13 @@ void AShooterCharacter::InitializeAmmoMap()
 {
 	AmmoMap.Add(EAmmoType::EAT_9mm, Starting9mmAmmo);
 	AmmoMap.Add(EAmmoType::EAT_AR, StartingARAmmo);
+}
+
+bool AShooterCharacter::WeaponHasAmmo()
+{
+	if (EquippedWeapon == nullptr)return false;
+
+	return EquippedWeapon->GetAmmo() > 0;
 }
 
 bool AShooterCharacter::GetBeamEndLocation(

@@ -1,5 +1,5 @@
 1. При проблемах с отображением PickupWidget не забудь проверить BaseWeaponBP->Collision Box-> Collision 
-ignore overpal Block
+ignore overlap Block
 Trace Responce
 //				//
 				V
