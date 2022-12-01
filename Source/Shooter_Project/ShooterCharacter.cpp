@@ -398,6 +398,7 @@ void AShooterCharacter::AutoFireReset()
 	{
 		//Перезарядка оружия
 		//Reload weapon
+		ReloadWeapon();
 	}
 }
 
@@ -624,6 +625,30 @@ void AShooterCharacter::PlayGunFireMontage()
 	}
 }
 
+void AShooterCharacter::ReloadButtonPressed()
+{
+	ReloadWeapon();
+}
+
+void AShooterCharacter::ReloadWeapon()
+{
+	if (CombatState != ECombatState::ECS_Unoccupied) return;
+
+	//Есть ли патроны правильного типа
+	//Do we have ammo of the correct type 
+	if (true)
+	{
+		FName MontageSection(TEXT("Reload SMG"));
+
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance && ReloadMontage)
+		{
+			AnimInstance->Montage_Play(ReloadMontage);
+			AnimInstance->Montage_JumpToSection(MontageSection);
+		}
+	}
+}
+
 bool AShooterCharacter::GetBeamEndLocation(
 	const FVector& MuzzelSocketLocation, 
 	FVector& OutBeamLocation)
@@ -728,6 +753,13 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		&AShooterCharacter::SelectButtonPressed);
 	PlayerInputComponent->BindAction("Select", IE_Released, this,
 		&AShooterCharacter::SelectButtonReleased);
+	PlayerInputComponent->BindAction("ReloadButton", IE_Pressed, this,
+		&AShooterCharacter::ReloadButtonPressed);
+}
+
+void AShooterCharacter::FinishReloading()
+{
+	CombatState = ECombatState::ECS_Unoccupied;
 }
 
 void AShooterCharacter::IncrementOverlappedItemCount(int8 Amount)
