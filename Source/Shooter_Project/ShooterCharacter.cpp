@@ -70,7 +70,10 @@ AShooterCharacter::AShooterCharacter():
 	//—тартовое кол-во патронов
 	//Starting ammo amount
 	Starting9mmAmmo(120),
-	StartingARAmmo(60)
+	StartingARAmmo(60),
+	//Ѕоевые состо€ни€
+	//Combat variables
+	CombatState(ECombatState::ECS_Unoccupied)
 	
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -200,68 +203,34 @@ void AShooterCharacter::LookUp(float Value)
 
 void AShooterCharacter::FireWeapon()
 {
+
+	if (CombatState != ECombatState::ECS_Unoccupied) return;
 	if (EquippedWeapon == nullptr)return;
 
-	if (FireSound)
+	if (WeaponHasAmmo())
 	{
-		UGameplayStatics::PlaySound2D(this,FireSound);
-	}
+		StartFireTimer();
 
-	const USkeletalMeshSocket* BarrelSocket = EquippedWeapon->GetItemMesh()->GetSocketByName("BarrelSocket");
-	if (BarrelSocket)
-	{
-		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
+		//¬оспроизведение звуков выстрела
+		//Player fire sound
+		PlayFireSound();
 
-		if (MuzzelFlash)
-		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzelFlash, SocketTransform);
-		}
+		//ѕосылает пулю
+		//Send bullet
+		SendBullet();
 
-		//get end beam
-		FVector BeamEnd;
-		bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamEnd);
-		if (bBeamEnd)
-		{
-			//конечна€ точка дымного следа - местоположение попадани€ трассировки
-			//Beam end point is now trace hit location
-			if (ImpactParticles)
-			{
-				UGameplayStatics::SpawnEmitterAtLocation(
-					GetWorld(),
-					ImpactParticles,
-					BeamEnd);
-			}
+		//¬оспроизведение HipFireMontage
+		//Play HipFireMontage
+		PlayGunFireMontage();
 
-			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
-				GetWorld(),
-				BeamParticles,
-				SocketTransform);
-			//—уществуют ли частицы дымного следа
-			//Are smoke trail particles creatures
-			if (Beam)
-			{
-				Beam->SetVectorParameter(FName("Target"), BeamEnd);
-			}
-		}
-	}
-
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (AnimInstance && HipFireMontage)
-	{
-		AnimInstance->Montage_Play(HipFireMontage);
-		AnimInstance->Montage_JumpToSection(FName("StartFire"));
-	}
-
-	if (EquippedWeapon)
-	{
 		//¬ычитает 1 из кол-ва патронов в оружии
 		//Subtract 1 from the weapon ammo
 		EquippedWeapon->DecrementAmmo();
+		
+		//запускает таймер BulletFire дл€ перекрестий
+		//Start BulletFire timer for crosshair
+		StartCrosshairBulletFire();
 	}
-
-	//запускает таймер BulletFire дл€ перекрестий
-	//Start BulletFire timer for crosshair
-	StartCrosshairBulletFire();
 }
 
 void AShooterCharacter::CameraInterpZoom(float DeltaTime)
@@ -395,12 +364,9 @@ void AShooterCharacter::StartCrosshairBulletFire()
 
 void AShooterCharacter::FireButtonPressed()
 {
-	if (WeaponHasAmmo())
-	{
-		bFireButtonPressed = true;
-		StartFireTimer();
-	}
+	bFireButtonPressed = true;
 
+	FireWeapon();
 }
 
 void AShooterCharacter::FireButtonReleased()
@@ -410,27 +376,28 @@ void AShooterCharacter::FireButtonReleased()
 
 void AShooterCharacter::StartFireTimer()
 {
-	if (bShouldFire)
-	{
-		FireWeapon();
-		bShouldFire = false;
-		GetWorldTimerManager().SetTimer(
-			AutoFireTimer,
-			this,
-			&AShooterCharacter::AutoFireReset,AutomaticFireRate);
-	}
+	CombatState = ECombatState::ECS_FireTimerInProgress;
+
+	GetWorldTimerManager().SetTimer(
+		AutoFireTimer,
+		this,
+		&AShooterCharacter::AutoFireReset,AutomaticFireRate);
 }
 
 void AShooterCharacter::AutoFireReset()
 {
+	CombatState = ECombatState::ECS_Unoccupied;
 	if (WeaponHasAmmo())
 	{
-		bShouldFire = true;
-
 		if (bFireButtonPressed)
 		{
-			StartFireTimer();
+			FireWeapon();
 		}
+	}
+	else
+	{
+		//ѕерезар€дка оружи€
+		//Reload weapon
 	}
 }
 
@@ -598,6 +565,65 @@ bool AShooterCharacter::WeaponHasAmmo()
 	return EquippedWeapon->GetAmmo() > 0;
 }
 
+void AShooterCharacter::PlayFireSound()
+{
+	if (FireSound)
+	{
+		UGameplayStatics::PlaySound2D(this, FireSound);
+	}
+}
+
+void AShooterCharacter::SendBullet()
+{
+	const USkeletalMeshSocket* BarrelSocket = EquippedWeapon->GetItemMesh()->GetSocketByName("BarrelSocket");
+	if (BarrelSocket)
+	{
+		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
+
+		if (MuzzelFlash)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzelFlash, SocketTransform);
+		}
+
+		//get end beam
+		FVector BeamEnd;
+		bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamEnd);
+		if (bBeamEnd)
+		{
+			//конечна€ точка дымного следа - местоположение попадани€ трассировки
+			//Beam end point is now trace hit location
+			if (ImpactParticles)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(
+					GetWorld(),
+					ImpactParticles,
+					BeamEnd);
+			}
+
+			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
+				GetWorld(),
+				BeamParticles,
+				SocketTransform);
+			//—уществуют ли частицы дымного следа
+			//Are smoke trail particles creatures
+			if (Beam)
+			{
+				Beam->SetVectorParameter(FName("Target"), BeamEnd);
+			}
+		}
+	}
+}
+
+void AShooterCharacter::PlayGunFireMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && HipFireMontage)
+	{
+		AnimInstance->Montage_Play(HipFireMontage);
+		AnimInstance->Montage_JumpToSection(FName("StartFire"));
+	}
+}
+
 bool AShooterCharacter::GetBeamEndLocation(
 	const FVector& MuzzelSocketLocation, 
 	FVector& OutBeamLocation)
@@ -619,7 +645,6 @@ bool AShooterCharacter::GetBeamEndLocation(
 		//OutBeamLocation is the END location for the line trace
 	}
 
-	
 	//2 трассировка от ствола оружи€
 	//Perform a second trace. this time from the gun barrel
 	FHitResult WeaponTraceHit;
