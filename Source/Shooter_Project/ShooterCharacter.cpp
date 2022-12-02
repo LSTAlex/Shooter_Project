@@ -633,20 +633,34 @@ void AShooterCharacter::ReloadButtonPressed()
 void AShooterCharacter::ReloadWeapon()
 {
 	if (CombatState != ECombatState::ECS_Unoccupied) return;
-
+	if (EquippedWeapon == nullptr) return;
+		
 	//≈сть ли патроны правильного типа
 	//Do we have ammo of the correct type 
-	if (true)
+	if (CarryingAmmo())
 	{
-		FName MontageSection(TEXT("Reload SMG"));
-
+		CombatState = ECombatState::ECS_Reloading;
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		if (AnimInstance && ReloadMontage)
 		{
 			AnimInstance->Montage_Play(ReloadMontage);
-			AnimInstance->Montage_JumpToSection(MontageSection);
+			AnimInstance->Montage_JumpToSection(EquippedWeapon->GetReloadMontageSection());
 		}
+	}	
+}
+
+bool AShooterCharacter::CarryingAmmo()
+{
+	if (EquippedWeapon == nullptr) return false;
+	
+	auto AmmoType = EquippedWeapon->GetAmmoType();
+
+	if (AmmoMap.Contains(AmmoType))
+	{
+		return AmmoMap[AmmoType] > 0;
 	}
+
+	return false;
 }
 
 bool AShooterCharacter::GetBeamEndLocation(
@@ -759,7 +773,43 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 void AShooterCharacter::FinishReloading()
 {
+	//ќбновление боевого состо€ни€
+	//Update the combat state
 	CombatState = ECombatState::ECS_Unoccupied;
+
+	if (EquippedWeapon == nullptr) return;
+
+	const auto AmmoType { EquippedWeapon->GetAmmoType() };
+
+	//ќбновление карты патронов
+	//Update the AmmoMap
+	if (AmmoMap.Contains(AmmoType))
+	{
+		// ол-во патронов того же типа что и экипированное оружие, которое есть у персонажа
+		//Amount of ammo the Character is carrying fo the equipped weapon
+		int32 CarriedAmmo = AmmoMap[AmmoType];
+
+		//—колько места осталось в магазине в экипированном оружии
+		//Space left in the magazine of EquippedWeapon
+		const int32 MagEmptySpase = EquippedWeapon->GetMagazineCapacity() - EquippedWeapon->GetAmmo();
+
+		if (MagEmptySpase > CarriedAmmo)
+		{
+			//перезар€дить магазин всеми патронами, которые есть
+			//Reload the magazine with all the ammo we are carrying
+			EquippedWeapon->ReloadAmmo(CarriedAmmo);
+			CarriedAmmo = 0;
+			AmmoMap.Add(AmmoType, CarriedAmmo);
+		}
+		else
+		{
+			//заполнить магазин
+			//fill the magazine
+			EquippedWeapon->ReloadAmmo(MagEmptySpase);
+			CarriedAmmo -= MagEmptySpase;
+			AmmoMap.Add(AmmoType, CarriedAmmo);
+		}
+	}
 }
 
 void AShooterCharacter::IncrementOverlappedItemCount(int8 Amount)

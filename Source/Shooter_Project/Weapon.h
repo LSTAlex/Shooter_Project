@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Item.h"
+#include "AmmoType.h"
 #include "Weapon.generated.h"
 
 UENUM(BlueprintType)
@@ -47,6 +48,21 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 	EWeaponType WeaponType;
 
+	//Тип патронов для этого оружия
+	//The type of ammo for this weapon
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	EAmmoType AmmoType;
+
+	//Максимум патронов помещающихся в оружие
+	//Maximum ammo that our weapon can hold
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	int32 MagazineCapacity;
+
+	//FName для секции монтажа перезарядки
+	//FName for the reload montage section
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	FName ReloadMontageSection;
+
 public:
 
 	//Добавляет импульс к оружию
@@ -60,4 +76,12 @@ public:
 	void DecrementAmmo();
 
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
+
+	FORCEINLINE EAmmoType GetAmmoType() const { return AmmoType; }
+
+	FORCEINLINE FName GetReloadMontageSection() const { return ReloadMontageSection; }
+
+	FORCEINLINE int32 GetMagazineCapacity() const { return MagazineCapacity; }
+
+	void ReloadAmmo(int32 Amount);
 };
