@@ -114,7 +114,7 @@ AShooterCharacter::AShooterCharacter():
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 
-	//Создаём компонент сцены руки
+	//Создаёт компонент сцены руки
 	//Create hand scene component
 	HandSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HandSceneComp"));
 }
@@ -542,6 +542,11 @@ void AShooterCharacter::SelectButtonPressed()
 	if (TraceHitItem)
 	{
 		TraceHitItem->StartItemCurve(this);
+
+		if (TraceHitItem->GetPickuoSound())
+		{
+			UGameplayStatics::PlaySound2D(this, TraceHitItem->GetPickuoSound());
+		}
 	}
 }
 
@@ -865,6 +870,10 @@ FVector AShooterCharacter::GetCameraInterpLocation()
 
 void AShooterCharacter::GetPickupItem(AItem* Item)
 {
+	if (Item->GetEquipSound())
+	{
+		UGameplayStatics::PlaySound2D(this, Item->GetEquipSound());
+	}
 	auto Weapon = Cast<AWeapon>(Item);
 
 	if (Weapon)
