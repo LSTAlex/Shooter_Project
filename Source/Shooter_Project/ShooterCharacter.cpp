@@ -113,6 +113,10 @@ AShooterCharacter::AShooterCharacter():
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f);//скорость вращения
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
+
+	//Создаём компонент сцены руки
+	//Create hand scene component
+	HandSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HandSceneComp"));
 }
 
 // Called when the game starts or when spawned
@@ -663,6 +667,25 @@ bool AShooterCharacter::CarryingAmmo()
 	return false;
 }
 
+void AShooterCharacter::GrabClip()
+{
+	if (EquippedWeapon == nullptr) return;
+	if (HandSceneComponent == nullptr) return;
+	
+	//Индекс кости магазина экипированного оружия
+	//Index for the clip bone on the EquippedWeapon
+	int32 ClipBoneIndex{ EquippedWeapon->GetItemMesh()->GetBoneIndex(EquippedWeapon->GetClipBoneName())};
+	//Хранится значение трансформации магазина
+	//Store the transform of the clip
+	ClipTransform = EquippedWeapon->GetItemMesh()->GetBoneTransform(ClipBoneIndex);
+
+	FAttachmentTransformRules AttachmentRules(EAttachmentRule::KeepRelative, true);
+	HandSceneComponent->AttachToComponent(GetMesh(), AttachmentRules, FName(TEXT("Hand_L")));
+	HandSceneComponent->SetWorldTransform(ClipTransform);
+
+	EquippedWeapon->SetMovingClip(true);
+}
+
 bool AShooterCharacter::GetBeamEndLocation(
 	const FVector& MuzzelSocketLocation, 
 	FVector& OutBeamLocation)
@@ -717,6 +740,11 @@ void AShooterCharacter::AimingButtonPressed()
 void AShooterCharacter::AimingButtonReleased()
 {
 	bAiming = false;
+}
+
+void AShooterCharacter::ReleaseClip()
+{
+	EquippedWeapon->SetMovingClip(false);
 }
 
 // Called every frame

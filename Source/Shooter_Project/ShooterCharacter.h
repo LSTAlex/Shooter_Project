@@ -147,6 +147,16 @@ protected:
 	//Checks to see of we have ammo of the equipped weapon ammo type
 	bool CarryingAmmo();
 
+	//Вызывается из анимационного Blueprint с помощью оповещения GrabClip
+	//Called from animation Blueprint with GrabClip notyfy
+	UFUNCTION(BlueprintCallable)
+	void GrabClip();
+
+	//Вызывается из анимационного Blueprint с помощью оповещения ReleaseClip
+	//Called from animation Blueprint with ReleaseClip notyfy
+	UFUNCTION(BlueprintCallable)
+	void ReleaseClip();
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -360,6 +370,16 @@ private:
 
 	UFUNCTION(BlueprintCallable)
 	void FinishReloading();
+
+	//Трансформация магазина когда мы берём магазин при перезарядке
+	//Transform of the clip when we first grab the clip during reloading
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	FTransform ClipTransform;
+
+	//Компонент сцены для прикрепления к руке персонажа во время перезарядки
+	//Scene component to attach to the character hand during reloading
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* HandSceneComponent;
 
 public:
 

@@ -63,6 +63,16 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 	FName ReloadMontageSection;
 
+	//True когда магазин перемещается во время перезарядки
+	//True when moving the clip while reloading
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	bool bMoovingClip;
+
+	//Название для кости магазина
+	//Name for the clip bone
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	FName ClipBoneName;
+
 public:
 
 	//Добавляет импульс к оружию
@@ -84,4 +94,8 @@ public:
 	FORCEINLINE int32 GetMagazineCapacity() const { return MagazineCapacity; }
 
 	void ReloadAmmo(int32 Amount);
+
+	FORCEINLINE FName GetClipBoneName() const { return ClipBoneName; }
+	
+	FORCEINLINE void SetMovingClip(bool Move) { bMoovingClip = Move; }
 };
