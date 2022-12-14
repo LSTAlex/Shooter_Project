@@ -16,10 +16,18 @@ class SHOOTER_PROJECT_API UShooterAnimInstance : public UAnimInstance
 
 public:
 
+	UShooterAnimInstance();
+
 	UFUNCTION(BlueprintCallable)
 	void UpdateAnimationProperties(float DeltaTime);
 
 	virtual void NativeInitializeAnimation() override;
+
+protected:
+
+	//Управляет переменными вращения на месте
+	//Handle turning in place variables
+	void TurnInPlace();
 
 private:
 
@@ -44,8 +52,31 @@ private:
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	float MovementOffsetYaw;
 
+	//Смещение рысканья в кадре до того как мы перестали двигаться
+	//Offset yaw the frame before we stopped moving 
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	float LastMovementOffsetYaw;
+
 	//
 	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool bAiming;
+
+	//Вращение персонажа по горизонтали
+	//Yaw of the character this frame
+	float CharacterYaw;
+
+	//Рысканье персонажа в прошлом кадре
+	//Yaw of the character the previous frame
+	float CharacterYawLastFrame;
 	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Turn In Place", meta = (AllowPrivateaccess =  "true"))
+	float RootYawOffset;
+
+	//Значение вращения в этом кадре
+	//Rotation curve value this frame
+	float RotationCurve;
+
+	//Значение вращения кривой в прошлом кадре
+	//Rotation curve value last frame
+	float RotationCurveLastFrame;
 };
