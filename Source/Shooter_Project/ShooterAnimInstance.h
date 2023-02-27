@@ -79,4 +79,14 @@ private:
 	//Значение вращения кривой в прошлом кадре
 	//Rotation curve value last frame
 	float RotationCurveLastFrame;
+
+	//получаем наклон персонажа
+	//get pitch character
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Turn In Place", meta = (AllowPrivateaccess = "true"))
+	float Pitch;
+
+	//Является true при перезарядке, используется для предотвращения смещения прицеливания при перезарядке
+	//True when reloading, used to prevent Aim Offset while reloading
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Turn In Place", meta = (AllowPrivateaccess = "true"))
+	bool bReloading;
 };

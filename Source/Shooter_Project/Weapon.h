@@ -98,4 +98,8 @@ public:
 	FORCEINLINE FName GetClipBoneName() const { return ClipBoneName; }
 	
 	FORCEINLINE void SetMovingClip(bool Move) { bMoovingClip = Move; }
+
+	//true - если магазин полон, иначе false
+	//return true if magazine full, else - false
+	bool ClipIsFull();
 };

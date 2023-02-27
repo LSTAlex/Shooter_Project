@@ -124,7 +124,7 @@ protected:
 	//Инифиализация карты патронов значениями патронов
 	//Initialize the Ammo Map with ammo values
 	void InitializeAmmoMap();
-#pragma endregion reg2
+
 	//Проверяет наличие потронов в оружие
 	//Check to make sure our weapon has ammo
 	bool WeaponHasAmmo();
@@ -146,7 +146,7 @@ protected:
 	//Проверяет есть ли патроны того типа, которые использует оружие
 	//Checks to see of we have ammo of the equipped weapon ammo type
 	bool CarryingAmmo();
-
+#pragma endregion reg2
 	//Вызывается из анимационного Blueprint с помощью оповещения GrabClip
 	//Called from animation Blueprint with GrabClip notyfy
 	UFUNCTION(BlueprintCallable)
@@ -352,7 +352,7 @@ private:
 	//Starting amount 9mm ammo
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess = "true"))
 	int32 Starting9mmAmmo;
-#pragma endregion reg1
+
 	//Стартовое кол-во патронов для винтовки
 	//Starting amount Assault Rifle ammo
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess = "true"))
@@ -370,7 +370,7 @@ private:
 
 	UFUNCTION(BlueprintCallable)
 	void FinishReloading();
-
+#pragma endregion reg1
 	//Трансформация магазина когда мы берём магазин при перезарядке
 	//Transform of the clip when we first grab the clip during reloading
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
@@ -407,4 +407,8 @@ public:
 	FVector GetCameraInterpLocation();
 
 	void GetPickupItem(AItem* Item);
+
+	//возвращает состояние персонажа
+	//Return CombatState character
+	FORCEINLINE ECombatState GetCombatState() const { return CombatState; }
 };
