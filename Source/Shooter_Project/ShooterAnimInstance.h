@@ -40,6 +40,10 @@ protected:
 	//Handle turning in place variables
 	void TurnInPlace();
 
+	//Выполняет вычисление для наклона во время бега
+	//Handle calculations for leaning while running
+	void Lean(float DeltaTime);
+
 private:
 
 	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
@@ -74,11 +78,11 @@ private:
 
 	//Вращение персонажа по горизонтали
 	//Yaw of the character this frame
-	float CharacterYaw;
+	float TIPCharacterYaw;
 
 	//Рысканье персонажа в прошлом кадре
 	//Yaw of the character the previous frame
-	float CharacterYawLastFrame;
+	float TIPCharacterYawLastFrame;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Turn In Place", meta = (AllowPrivateaccess =  "true"))
 	float RootYawOffset;
@@ -105,4 +109,17 @@ private:
 	//Offset state; used to determine which Aim Offset to use
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Turn In Place", meta = (AllowPrivateaccess = "true"))
 	EOffsetState OffsetState;
+
+	//Рысканье персонажа в этом кадре
+	//Сharacter Yaw this frame
+	float CharacterYaw;
+
+	//Рысканье персонажа в прошлом кадре
+	//Yaw of the character the previous frame
+	float CharacterYawLastFrame;
+
+	//Дельта рысканья, используемая для наклона в пространстве смешивания бега
+	//Yaw delta used for leaning in the running blendspace
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Lean, meta =(AllowPrivateAccess = "true"))
+	float YawDelta;
 };
