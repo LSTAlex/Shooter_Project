@@ -112,11 +112,11 @@ private:
 
 	//Рысканье персонажа в этом кадре
 	//Сharacter Yaw this frame
-	float CharacterYaw;
+	FRotator CharacterRotation;
 
 	//Рысканье персонажа в прошлом кадре
 	//Yaw of the character the previous frame
-	float CharacterYawLastFrame;
+	FRotator CharacterRotationLastFrame;
 
 	//Дельта рысканья, используемая для наклона в пространстве смешивания бега
 	//Yaw delta used for leaning in the running blendspace
