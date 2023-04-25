@@ -36,8 +36,9 @@ void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 
 	if (ShooterCharacter)
 	{
+		bCrouching = ShooterCharacter->GetCrouching();
 		bReloading = ShooterCharacter->GetCombatState() == ECombatState::ECS_Reloading;
-
+		
 		//получение скорости персонажа из значения velociti
 		//Get the speed of the character from velocity
 		FVector Velocity{ ShooterCharacter->GetVelocity() };
@@ -170,9 +171,9 @@ void UShooterAnimInstance::Lean(float DeltaTime)
 		-1,
 		FColor::Red,
 		FString::Printf(TEXT("YawDelta: % f"),YawDelta));*/
-	if (GEngine) GEngine->AddOnScreenDebugMessage(1,
+	/*if (GEngine) GEngine->AddOnScreenDebugMessage(1,
 		-1,
 		FColor::Red,
-		FString::Printf(TEXT("Delta: % f"), Delta.Yaw));
+		FString::Printf(TEXT("Delta: % f"), Delta.Yaw));*/
 
 }

@@ -122,4 +122,9 @@ private:
 	//Yaw delta used for leaning in the running blendspace
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Lean, meta =(AllowPrivateAccess = "true"))
 	float YawDelta;
+
+	//True when crouching
+	//Истино во время приседания
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Crouching, meta = (AllowPrivateAccess = "true"))
+	bool bCrouching;
 };
