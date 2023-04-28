@@ -16,6 +16,7 @@
 #include "Weapon.h"
 #include "Components/SphereComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/CapsuleComponent.h"
 
 
 // Sets default values
@@ -76,7 +77,9 @@ AShooterCharacter::AShooterCharacter():
 	CombatState(ECombatState::ECS_Unoccupied),
 	bCrouching(false),
 	BaseMovementSpeed(650.f),
-	CrouchMovementSpeed(300.f)
+	CrouchMovementSpeed(300.f),
+	StandingCapsuleHalfHeight(88.f),
+	CrouchingCapsuleHalfHeight(44.f)
 	
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -92,7 +95,7 @@ AShooterCharacter::AShooterCharacter():
 	//вращает рычаг, основываясь на вращении контроллера
 	//Rotate the arm based on the controller
 	CameraBoom->bUsePawnControlRotation = true;
-	CameraBoom->SocketOffset = FVector(0.f, 50.f, 70.f);
+	CameraBoom->SocketOffset = FVector(0.f, 50.f, 45.f);
 
 	//создание следующей камеры
 	//Create a follow camera
@@ -782,6 +785,34 @@ void AShooterCharacter::CrouchButtonReleased()
 	}
 }
 
+void AShooterCharacter::InterpCapsuleHalfHaight(float DelataTime)
+{
+	float TargetCapsuleHalfHeight{};
+
+	if (bCrouching)
+	{
+		TargetCapsuleHalfHeight = CrouchingCapsuleHalfHeight;
+	}
+	else
+	{
+		TargetCapsuleHalfHeight = StandingCapsuleHalfHeight;
+	}
+
+	const float InterpHalfHeight{ FMath::FInterpTo(
+		GetCapsuleComponent()->GetScaledCapsuleHalfHeight(),
+		TargetCapsuleHalfHeight,
+		DelataTime,
+		20.f)};
+
+	//Nagative value if crouching; Positive value if standing;
+	//При приседании отрицательное значение. Положительное значение когда персонаж стоит.
+	const float DeltaCapsuleHalfHeight{ InterpHalfHeight - GetCapsuleComponent()->GetScaledCapsuleHalfHeight()};
+	const FVector MeshOffset{ 0.f,0.f,-DeltaCapsuleHalfHeight };
+	GetMesh()->AddLocalOffset(MeshOffset);
+
+	GetCapsuleComponent()->SetCapsuleHalfHeight(InterpHalfHeight);
+}
+
 // Called every frame
 void AShooterCharacter::Tick(float DeltaTime)
 {
@@ -800,6 +831,10 @@ void AShooterCharacter::Tick(float DeltaTime)
 	//проверка OverlappedItemCount, затем трассировка для предметов
 	//Check OverlappedItemCount, then trace for items
 	TraceForItems();
+
+	//Interpolate the capsule half height based on crouching/standing
+	//Интерполирует половину высоты капсулы в зависимости от вприсяде/стоит персонаж
+	InterpCapsuleHalfHaight(DeltaTime);
 }
 
 // Called to bind functionality to input

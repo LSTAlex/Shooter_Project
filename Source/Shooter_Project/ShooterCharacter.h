@@ -161,6 +161,10 @@ protected:
 
 	void CrouchButtonReleased();
 
+	//Interps capsule half height when character crouching/standing
+	//Интерполирует половину высоты капсулы когда персонаж вприсяде/стоит
+	void InterpCapsuleHalfHaight(float DelataTime);
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -374,7 +378,7 @@ private:
 
 	UFUNCTION(BlueprintCallable)
 	void FinishReloading();
-#pragma endregion reg1
+
 	//Трансформация магазина когда мы берём магазин при перезарядке
 	//Transform of the clip when we first grab the clip during reloading
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
@@ -389,6 +393,7 @@ private:
 	//Истенен во время приседания
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool bCrouching;
+#pragma endregion reg1
 
 	//Regular movement speed
 	//Обычная скорость ходьбы
@@ -399,6 +404,20 @@ private:
 	//Скорость ходьбы в присядя
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	float CrouchMovementSpeed;
+
+	//Current half height of the capsule
+	//Текущее половина высоты капсулы
+	float CurrentCapsuleHalfHeight;
+
+	//Half height of the capsule when not crouching
+	//Половина высоты капсулы, когда не вприсяде 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	float StandingCapsuleHalfHeight;
+
+	//Half height of the capsule when crouching
+	//Половина высоты капсулы когда вприсяде
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	float CrouchingCapsuleHalfHeight;
 
 public:
 
