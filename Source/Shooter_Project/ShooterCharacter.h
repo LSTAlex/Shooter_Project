@@ -2,14 +2,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "AmmoType.h"
 #include "ShooterCharacter.generated.h"
 
+
+
 UENUM(BlueprintType)
-enum class EAmmoType : uint8
+enum class ECombatState : uint8
 {
-	EAT_9mm UMETA(DisplayName = "9mm"),
-	EAT_AR UMETA(DisplayName = "Assault Rifle"),
-	EAT_MAX UMETA(DisplayName = "DefaultMAX")
+	ECS_Unoccupied UMETA(DisplayName = "Unoccupied"),
+	ECS_FireTimerInProgress UMETA(DisplayName = "FireTimerInProgress"),
+	ECS_Reloading UMETA(DisplayName = "Reloading"),
+	ECS_MAX UMETA(DisplayName = "DefaultMAX")
 };
 
 UCLASS()
@@ -112,7 +116,7 @@ protected:
 	void SelectButtonPressed();
 
 	void SelectButtonReleased();
-#pragma endregion reg2
+
 	//Сбрасывает текущее экипированное оружие и экипирует TraceHitItem
 	//Drops currently equipped weapon and equips TraceHitItem
 	void SwapWeapon(AWeapon* WeaponToSwap);
@@ -120,6 +124,46 @@ protected:
 	//Инифиализация карты патронов значениями патронов
 	//Initialize the Ammo Map with ammo values
 	void InitializeAmmoMap();
+
+	//Проверяет наличие потронов в оружие
+	//Check to make sure our weapon has ammo
+	bool WeaponHasAmmo();
+
+	//FireWeapon функции
+	//FireWeapon functions
+	void PlayFireSound();
+	void SendBullet();
+	void PlayGunFireMontage();
+
+	//Привязка к кнопке R
+	//Bound to the R key
+	void ReloadButtonPressed();
+
+	//Управляет перезарядкой оружия
+	//Handle reloading of the weapon
+	void ReloadWeapon();
+
+	//Проверяет есть ли патроны того типа, которые использует оружие
+	//Checks to see of we have ammo of the equipped weapon ammo type
+	bool CarryingAmmo();
+#pragma endregion reg2
+	//Вызывается из анимационного Blueprint с помощью оповещения GrabClip
+	//Called from animation Blueprint with GrabClip notyfy
+	UFUNCTION(BlueprintCallable)
+	void GrabClip();
+
+	//Вызывается из анимационного Blueprint с помощью оповещения ReleaseClip
+	//Called from animation Blueprint with ReleaseClip notyfy
+	UFUNCTION(BlueprintCallable)
+	void ReleaseClip();
+
+	void CrouchButtonPressed();
+
+	void CrouchButtonReleased();
+
+	//Interps capsule half height when character crouching/standing
+	//Интерполирует половину высоты капсулы когда персонаж вприсяде/стоит
+	void InterpCapsuleHalfHaight(float DelataTime);
 
 public:
 	// Called every frame
@@ -134,54 +178,54 @@ private:
 	//CameraBoom позиционирует камеру за персонажем 
 	//CameraBoom positioning the camera behind the character
 	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		class USpringArmComponent* CameraBoom;
+	class USpringArmComponent* CameraBoom;
 
 	//Самера, следующая за игроком
 	//Camera that follows the character
 	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		class UCameraComponent* FollowCamera;
+	class UCameraComponent* FollowCamera;
 
 
 	//Базовое значение для поворота в градусах/сек
 	//Base turn rate, in deg/sec.
 	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		float BaseTurnRate;
+	float BaseTurnRate;
 
 	//Базовое значение для взгляда вверх/вниз в градусах/сек
 	//Base look up/down rate, in deg/sec.
 	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		float BaseLookUpRate;
+	float BaseLookUpRate;
 
 	//рандомный звук выстрела из оружия
 	//Randomized gunshoot sound cue
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-		class USoundCue* FireSound;
+	class USoundCue* FireSound;
 
 	//вспышка, призванная в сокете ствола
 	//Flash spawned at BarrelSocket
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-		class UParticleSystem* MuzzelFlash;
+	class UParticleSystem* MuzzelFlash;
 
 	//монтаж для стрельбы из оружия
 	//Montage for firing the weapon
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-		class UAnimMontage* HipFireMontage;
+	class UAnimMontage* HipFireMontage;
 
 	//частицы, призываемые при попадании пули
 	//Particles spawned upon bullet impact
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-		UParticleSystem* ImpactParticles;
+	UParticleSystem* ImpactParticles;
 
 	//дымный след от пуль
 	//Smoke trail for bullet
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-		UParticleSystem* BeamParticles;
+	UParticleSystem* BeamParticles;
 
 
 	//true при прицеливании 
 	//true when aiming
 	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
-		bool bAiming;
+	bool bAiming;
 
 	//стандартное значение поля обзора камеры
 	//Default camera field of view value
@@ -196,59 +240,58 @@ private:
 	//скорость интерполяции приблежения камеры при прицеливании
 	//Interpolation speed for zooming aiming
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-		float ZoomInterpspeed;
+	float ZoomInterpspeed;
 
 	//скорость вращения по вертикали не в прицеливании
 	//Turn rate while not aiming
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		float HipTurnRate;
+	float HipTurnRate;
 	//скорость вращения по горизонталине в прицеливании
 	//Look up rate when not aiming
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		float HipLookUpRate;
+	float HipLookUpRate;
 	//скорость вращения по горизонтали в прицеливании
 	//Turn rate when aiming
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		float AimingTurnRate;
+	float AimingTurnRate;
 	//скорость вращения по вертикали в прицеливании
 	//Look up rate when aimng
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		float AimingLookUpRate;
+	float AimingLookUpRate;
 
 	//множители обзора при использовании мыши не в прицеливании
 	//Scale factor for mouse look sensitivity. Turn rate when not aiming
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"), meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
-		float MouseHipTurnRate;
+	float MouseHipTurnRate;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"), meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
-		float MouseHipLookUpRate;
+	float MouseHipLookUpRate;
 
 	//множители обзора при использовании мыши  в прицеливании
 	//Scale factor for mouse look sensitivity. LookUp rate when aiming
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"), meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
-		float MouseAimingTurnRate;
+	float MouseAimingTurnRate;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"), meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
-		float MouseAimingLookUpRate;
+	float MouseAimingLookUpRate;
 
 	//определяет разброс перекрестия
 	//defines the crosshair spread
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
-		float CrosshairSpreadMultiplier;
+	float CrosshairSpreadMultiplier;
 	//компонент скорости для разброса перекрестия
 	//Velocity component for crosshairs spread
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
-		float CrosshairVelosityFactor;
+	float CrosshairVelosityFactor;
 	//компонент в воздехе для разброса перекрестия
 	//in air component for crosshairs spread
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
-		float CrosshairInAirFactor;
+	float CrosshairInAirFactor;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
-		float CrosshairInAimFactor;
+	float CrosshairInAimFactor;
 	//компонент стрельбы для разброса перекрестия
 	//Shooting component for crosshairs spread
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
 	float CrosshairShootingFactor;
-
 
 	float ShootTimeDuration;
 	bool bFiringBullet;
@@ -281,13 +324,13 @@ private:
 	//AItem в который попала трассировка в последнем кадре 
 	//AItem we hit last frame
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
-		class AItem* TraceHitItemLastFrame;
+	class AItem* TraceHitItemLastFrame;
 
 	//Текущее экипированное оружие
 	//Currently qequipped Weapon
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
-		AWeapon* EquippedWeapon;
-#pragma endregion reg1
+	AWeapon* EquippedWeapon;
+
 	//Установить это в Blueprints для стандартного класса оружия
 	//Set this in Blueprints for the default Weapon class
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
@@ -323,6 +366,59 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess = "true"))
 	int32 StartingARAmmo;
 
+	//Боевое состояние, можно стрелять или перезаться только в состоянии Unoccupied
+	//Combat state. can only fire or reload if Unoccupied
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	ECombatState CombatState;
+
+	//Монтаж для анимации перезарядки
+	//Montage for reload animations
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* ReloadMontage;
+
+	UFUNCTION(BlueprintCallable)
+	void FinishReloading();
+
+	//Трансформация магазина когда мы берём магазин при перезарядке
+	//Transform of the clip when we first grab the clip during reloading
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	FTransform ClipTransform;
+
+	//Компонент сцены для прикрепления к руке персонажа во время перезарядки
+	//Scene component to attach to the character hand during reloading
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* HandSceneComponent;
+
+	//True when crouching
+	//Истенен во время приседания
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	bool bCrouching;
+#pragma endregion reg1
+
+	//Regular movement speed
+	//Обычная скорость ходьбы
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	float BaseMovementSpeed;
+
+	//Crouch movement speed
+	//Скорость ходьбы в присядя
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	float CrouchMovementSpeed;
+
+	//Current half height of the capsule
+	//Текущее половина высоты капсулы
+	float CurrentCapsuleHalfHeight;
+
+	//Half height of the capsule when not crouching
+	//Половина высоты капсулы, когда не вприсяде 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	float StandingCapsuleHalfHeight;
+
+	//Half height of the capsule when crouching
+	//Половина высоты капсулы когда вприсяде
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	float CrouchingCapsuleHalfHeight;
+
 public:
 
 	//Возвращает субобъект CameraBoom
@@ -349,4 +445,10 @@ public:
 	FVector GetCameraInterpLocation();
 
 	void GetPickupItem(AItem* Item);
+
+	//возвращает состояние персонажа
+	//Return CombatState character
+	FORCEINLINE ECombatState GetCombatState() const { return CombatState; }
+
+	FORCEINLINE bool GetCrouching() const { return bCrouching; }
 };

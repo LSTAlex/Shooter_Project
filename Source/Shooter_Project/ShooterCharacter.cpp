@@ -16,6 +16,7 @@
 #include "Weapon.h"
 #include "Components/SphereComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/CapsuleComponent.h"
 
 
 // Sets default values
@@ -70,7 +71,15 @@ AShooterCharacter::AShooterCharacter():
 	//—тартовое кол-во патронов
 	//Starting ammo amount
 	Starting9mmAmmo(120),
-	StartingARAmmo(60)
+	StartingARAmmo(60),
+	//Ѕоевые состо€ни€
+	//Combat variables
+	CombatState(ECombatState::ECS_Unoccupied),
+	bCrouching(false),
+	BaseMovementSpeed(650.f),
+	CrouchMovementSpeed(300.f),
+	StandingCapsuleHalfHeight(88.f),
+	CrouchingCapsuleHalfHeight(44.f)
 	
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -86,7 +95,7 @@ AShooterCharacter::AShooterCharacter():
 	//вращает рычаг, основыва€сь на вращении контроллера
 	//Rotate the arm based on the controller
 	CameraBoom->bUsePawnControlRotation = true;
-	CameraBoom->SocketOffset = FVector(0.f, 50.f, 70.f);
+	CameraBoom->SocketOffset = FVector(0.f, 50.f, 45.f);
 
 	//создание следующей камеры
 	//Create a follow camera
@@ -110,6 +119,10 @@ AShooterCharacter::AShooterCharacter():
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f);//скорость вращени€
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
+
+	//—оздаЄт компонент сцены руки
+	//Create hand scene component
+	HandSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HandSceneComp"));
 }
 
 // Called when the game starts or when spawned
@@ -128,6 +141,8 @@ void AShooterCharacter::BeginPlay()
 	EquipWeapon(SpawnDefaultWeapon());
 
 	InitializeAmmoMap();
+
+	GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
 }
 
 void AShooterCharacter::MoveForward(float Value)
@@ -200,59 +215,34 @@ void AShooterCharacter::LookUp(float Value)
 
 void AShooterCharacter::FireWeapon()
 {
-	if (FireSound)
+
+	if (CombatState != ECombatState::ECS_Unoccupied) return;
+	if (EquippedWeapon == nullptr)return;
+
+	if (WeaponHasAmmo())
 	{
-		UGameplayStatics::PlaySound2D(this,FireSound);
+		StartFireTimer();
+
+		//¬оспроизведение звуков выстрела
+		//Player fire sound
+		PlayFireSound();
+
+		//ѕосылает пулю
+		//Send bullet
+		SendBullet();
+
+		//¬оспроизведение HipFireMontage
+		//Play HipFireMontage
+		PlayGunFireMontage();
+
+		//¬ычитает 1 из кол-ва патронов в оружии
+		//Subtract 1 from the weapon ammo
+		EquippedWeapon->DecrementAmmo();
+		
+		//запускает таймер BulletFire дл€ перекрестий
+		//Start BulletFire timer for crosshair
+		StartCrosshairBulletFire();
 	}
-
-	const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
-	if (BarrelSocket)
-	{
-		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
-
-		if (MuzzelFlash)
-		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzelFlash, SocketTransform);
-		}
-
-		//get end beam
-		FVector BeamEnd;
-		bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamEnd);
-		if (bBeamEnd)
-		{
-			//конечна€ точка дымного следа - местоположение попадани€ трассировки
-			//Beam end point is now trace hit location
-			if (ImpactParticles)
-			{
-				UGameplayStatics::SpawnEmitterAtLocation(
-					GetWorld(),
-					ImpactParticles,
-					BeamEnd);
-			}
-
-			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
-				GetWorld(),
-				BeamParticles,
-				SocketTransform);
-			//—уществуют ли частицы дымного следа
-			//Are smoke trail particles creatures
-			if (Beam)
-			{
-				Beam->SetVectorParameter(FName("Target"), BeamEnd);
-			}
-		}
-	}
-
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (AnimInstance && HipFireMontage)
-	{
-		AnimInstance->Montage_Play(HipFireMontage);
-		AnimInstance->Montage_JumpToSection(FName("StartFire"));
-	}
-
-	//запускает таймер BulletFire дл€ перекрестий
-	//Start BulletFire timer for crosshair
-	StartCrosshairBulletFire();
 }
 
 void AShooterCharacter::CameraInterpZoom(float DeltaTime)
@@ -387,7 +377,8 @@ void AShooterCharacter::StartCrosshairBulletFire()
 void AShooterCharacter::FireButtonPressed()
 {
 	bFireButtonPressed = true;
-	StartFireTimer();
+
+	FireWeapon();
 }
 
 void AShooterCharacter::FireButtonReleased()
@@ -397,24 +388,29 @@ void AShooterCharacter::FireButtonReleased()
 
 void AShooterCharacter::StartFireTimer()
 {
-	if (bShouldFire)
-	{
-		FireWeapon();
-		bShouldFire = false;
-		GetWorldTimerManager().SetTimer(
-			AutoFireTimer,
-			this,
-			&AShooterCharacter::AutoFireReset,AutomaticFireRate);
-	}
+	CombatState = ECombatState::ECS_FireTimerInProgress;
+
+	GetWorldTimerManager().SetTimer(
+		AutoFireTimer,
+		this,
+		&AShooterCharacter::AutoFireReset,AutomaticFireRate);
 }
 
 void AShooterCharacter::AutoFireReset()
 {
-	bShouldFire = true;
-
-	if (bFireButtonPressed)
+	CombatState = ECombatState::ECS_Unoccupied;
+	if (WeaponHasAmmo())
 	{
-		StartFireTimer();
+		if (bFireButtonPressed)
+		{
+			FireWeapon();
+		}
+	}
+	else
+	{
+		//ѕерезар€дка оружи€
+		//Reload weapon
+		ReloadWeapon();
 	}
 }
 
@@ -554,6 +550,11 @@ void AShooterCharacter::SelectButtonPressed()
 	if (TraceHitItem)
 	{
 		TraceHitItem->StartItemCurve(this);
+
+		if (TraceHitItem->GetPickuoSound())
+		{
+			UGameplayStatics::PlaySound2D(this, TraceHitItem->GetPickuoSound());
+		}
 	}
 }
 
@@ -573,6 +574,129 @@ void AShooterCharacter::InitializeAmmoMap()
 {
 	AmmoMap.Add(EAmmoType::EAT_9mm, Starting9mmAmmo);
 	AmmoMap.Add(EAmmoType::EAT_AR, StartingARAmmo);
+}
+
+bool AShooterCharacter::WeaponHasAmmo()
+{
+	if (EquippedWeapon == nullptr)return false;
+
+	return EquippedWeapon->GetAmmo() > 0;
+}
+
+void AShooterCharacter::PlayFireSound()
+{
+	if (FireSound)
+	{
+		UGameplayStatics::PlaySound2D(this, FireSound);
+	}
+}
+
+void AShooterCharacter::SendBullet()
+{
+	const USkeletalMeshSocket* BarrelSocket = EquippedWeapon->GetItemMesh()->GetSocketByName("BarrelSocket");
+	if (BarrelSocket)
+	{
+		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
+
+		if (MuzzelFlash)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzelFlash, SocketTransform);
+		}
+
+		//get end beam
+		FVector BeamEnd;
+		bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamEnd);
+		if (bBeamEnd)
+		{
+			//конечна€ точка дымного следа - местоположение попадани€ трассировки
+			//Beam end point is now trace hit location
+			if (ImpactParticles)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(
+					GetWorld(),
+					ImpactParticles,
+					BeamEnd);
+			}
+
+			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
+				GetWorld(),
+				BeamParticles,
+				SocketTransform);
+			//—уществуют ли частицы дымного следа
+			//Are smoke trail particles creatures
+			if (Beam)
+			{
+				Beam->SetVectorParameter(FName("Target"), BeamEnd);
+			}
+		}
+	}
+}
+
+void AShooterCharacter::PlayGunFireMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && HipFireMontage)
+	{
+		AnimInstance->Montage_Play(HipFireMontage);
+		AnimInstance->Montage_JumpToSection(FName("StartFire"));
+	}
+}
+
+void AShooterCharacter::ReloadButtonPressed()
+{
+	ReloadWeapon();
+}
+
+void AShooterCharacter::ReloadWeapon()
+{
+	if (CombatState != ECombatState::ECS_Unoccupied) return;
+	if (EquippedWeapon == nullptr) return;
+		
+	//≈сть ли патроны правильного типа
+	//Do we have ammo of the correct type 
+	if (CarryingAmmo() && !EquippedWeapon->ClipIsFull())
+	{
+		CombatState = ECombatState::ECS_Reloading;
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance && ReloadMontage)
+		{
+			AnimInstance->Montage_Play(ReloadMontage);
+			AnimInstance->Montage_JumpToSection(EquippedWeapon->GetReloadMontageSection());
+		}
+	}	
+}
+
+bool AShooterCharacter::CarryingAmmo()
+{
+	if (EquippedWeapon == nullptr) return false;
+	
+	auto AmmoType = EquippedWeapon->GetAmmoType();
+
+	if (AmmoMap.Contains(AmmoType))
+	{
+		return AmmoMap[AmmoType] > 0;
+	}
+
+	return false;
+}
+
+void AShooterCharacter::GrabClip()
+{
+	if (EquippedWeapon == nullptr) return;
+	if (HandSceneComponent == nullptr) return;
+	
+	//»ндекс кости магазина экипированного оружи€
+	//Index for the clip bone on the EquippedWeapon
+	int32 ClipBoneIndex{ EquippedWeapon->GetItemMesh()->GetBoneIndex(EquippedWeapon->GetClipBoneName())};
+	//’ранитс€ значение трансформации магазина
+	//Store the transform of the clip
+	ClipTransform = EquippedWeapon->GetItemMesh()->GetBoneTransform(ClipBoneIndex);
+
+	FAttachmentTransformRules AttachmentRules(EAttachmentRule::KeepRelative, true);
+	HandSceneComponent->AttachToComponent(GetMesh(), AttachmentRules, FName(TEXT("Hand_L")));
+	HandSceneComponent->SetWorldTransform(ClipTransform);
+
+	EquippedWeapon->SetMovingClip(true);
 }
 
 bool AShooterCharacter::GetBeamEndLocation(
@@ -596,7 +720,6 @@ bool AShooterCharacter::GetBeamEndLocation(
 		//OutBeamLocation is the END location for the line trace
 	}
 
-	
 	//2 трассировка от ствола оружи€
 	//Perform a second trace. this time from the gun barrel
 	FHitResult WeaponTraceHit;
@@ -632,6 +755,64 @@ void AShooterCharacter::AimingButtonReleased()
 	bAiming = false;
 }
 
+void AShooterCharacter::ReleaseClip()
+{
+	EquippedWeapon->SetMovingClip(false);
+}
+
+void AShooterCharacter::CrouchButtonPressed()
+{
+	if (!GetCharacterMovement()->IsFalling())
+	{
+		bCrouching = !bCrouching;
+	}
+	if (bCrouching)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = CrouchMovementSpeed;
+	}
+	else
+	{
+		GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
+	}
+}
+
+void AShooterCharacter::CrouchButtonReleased()
+{
+	if (!GetCharacterMovement()->IsFalling())
+	{
+		bCrouching = false;
+		GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
+	}
+}
+
+void AShooterCharacter::InterpCapsuleHalfHaight(float DelataTime)
+{
+	float TargetCapsuleHalfHeight{};
+
+	if (bCrouching)
+	{
+		TargetCapsuleHalfHeight = CrouchingCapsuleHalfHeight;
+	}
+	else
+	{
+		TargetCapsuleHalfHeight = StandingCapsuleHalfHeight;
+	}
+
+	const float InterpHalfHeight{ FMath::FInterpTo(
+		GetCapsuleComponent()->GetScaledCapsuleHalfHeight(),
+		TargetCapsuleHalfHeight,
+		DelataTime,
+		20.f)};
+
+	//Nagative value if crouching; Positive value if standing;
+	//ѕри приседании отрицательное значение. ѕоложительное значение когда персонаж стоит.
+	const float DeltaCapsuleHalfHeight{ InterpHalfHeight - GetCapsuleComponent()->GetScaledCapsuleHalfHeight()};
+	const FVector MeshOffset{ 0.f,0.f,-DeltaCapsuleHalfHeight };
+	GetMesh()->AddLocalOffset(MeshOffset);
+
+	GetCapsuleComponent()->SetCapsuleHalfHeight(InterpHalfHeight);
+}
+
 // Called every frame
 void AShooterCharacter::Tick(float DeltaTime)
 {
@@ -650,6 +831,10 @@ void AShooterCharacter::Tick(float DeltaTime)
 	//проверка OverlappedItemCount, затем трассировка дл€ предметов
 	//Check OverlappedItemCount, then trace for items
 	TraceForItems();
+
+	//Interpolate the capsule half height based on crouching/standing
+	//»нтерполирует половину высоты капсулы в зависимости от вприс€де/стоит персонаж
+	InterpCapsuleHalfHaight(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -680,6 +865,53 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		&AShooterCharacter::SelectButtonPressed);
 	PlayerInputComponent->BindAction("Select", IE_Released, this,
 		&AShooterCharacter::SelectButtonReleased);
+	PlayerInputComponent->BindAction("ReloadButton", IE_Pressed, this,
+		&AShooterCharacter::ReloadButtonPressed);
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this,
+		&AShooterCharacter::CrouchButtonPressed);
+	PlayerInputComponent->BindAction("Crouch", IE_Released, this,
+		&AShooterCharacter::CrouchButtonReleased);
+}
+
+void AShooterCharacter::FinishReloading()
+{
+	//ќбновление боевого состо€ни€
+	//Update the combat state
+	CombatState = ECombatState::ECS_Unoccupied;
+
+	if (EquippedWeapon == nullptr) return;
+
+	const auto AmmoType { EquippedWeapon->GetAmmoType() };
+
+	//ќбновление карты патронов
+	//Update the AmmoMap
+	if (AmmoMap.Contains(AmmoType))
+	{
+		// ол-во патронов того же типа что и экипированное оружие, которое есть у персонажа
+		//Amount of ammo the Character is carrying fo the equipped weapon
+		int32 CarriedAmmo = AmmoMap[AmmoType];
+
+		//—колько места осталось в магазине в экипированном оружии
+		//Space left in the magazine of EquippedWeapon
+		const int32 MagEmptySpase = EquippedWeapon->GetMagazineCapacity() - EquippedWeapon->GetAmmo();
+
+		if (MagEmptySpase > CarriedAmmo)
+		{
+			//перезар€дить магазин всеми патронами, которые есть
+			//Reload the magazine with all the ammo we are carrying
+			EquippedWeapon->ReloadAmmo(CarriedAmmo);
+			CarriedAmmo = 0;
+			AmmoMap.Add(AmmoType, CarriedAmmo);
+		}
+		else
+		{
+			//заполнить магазин
+			//fill the magazine
+			EquippedWeapon->ReloadAmmo(MagEmptySpase);
+			CarriedAmmo -= MagEmptySpase;
+			AmmoMap.Add(AmmoType, CarriedAmmo);
+		}
+	}
 }
 
 void AShooterCharacter::IncrementOverlappedItemCount(int8 Amount)
@@ -707,6 +939,10 @@ FVector AShooterCharacter::GetCameraInterpLocation()
 
 void AShooterCharacter::GetPickupItem(AItem* Item)
 {
+	if (Item->GetEquipSound())
+	{
+		UGameplayStatics::PlaySound2D(this, Item->GetEquipSound());
+	}
 	auto Weapon = Cast<AWeapon>(Item);
 
 	if (Weapon)

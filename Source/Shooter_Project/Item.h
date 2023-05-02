@@ -128,7 +128,7 @@ private:
 	//State of the Items
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	EItemState ItemState;
-#pragma endregion reg1
+
 	//Ассет кривой для использования с компонентом Z местоположения предмета
 	//The curve asset to use for the items's Z location when interping
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
@@ -167,7 +167,7 @@ private:
 	//X and Y for the Item while interping in the EquipInterping state
 	float ItemInterpX;
 	float ItemInterpY;
-
+#pragma endregion reg1
 	//Смещение исходного рысканья между камерой и подвеграющимся интерполяции объектом
 	//Initial Yaw offset between the camera and the interping item
 	float InterpInitialYawOffset;
@@ -176,6 +176,16 @@ private:
 	//Curve for scale Item
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	UCurveFloat* ItemScaleCurve;
+
+	//звук воспроизводимый при поднятии предмета
+	//Sound played when item is picked up
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	class USoundCue* PickuoSound;
+
+	//звук воспроизводимый при экипировывании предмета
+	//Sound played when the item is equipped
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	class USoundCue* EquipSound;
 
 public:
 
@@ -191,4 +201,7 @@ public:
 	//Вызвано из класса AShooterCharacter
 	//Called from the AShooterCharacter
 	void StartItemCurve(AShooterCharacter* Char);
+
+	FORCEINLINE USoundCue* GetPickuoSound() const { return PickuoSound; }
+	FORCEINLINE USoundCue* GetEquipSound() const { return EquipSound; }
 };
