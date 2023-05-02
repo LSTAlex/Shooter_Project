@@ -165,6 +165,11 @@ protected:
 	//Интерполирует половину высоты капсулы когда персонаж вприсяде/стоит
 	void InterpCapsuleHalfHaight(float DelataTime);
 
+	void Aim();
+	void StopAiming();
+
+	void PickupAmmo(class AAmmo* Ammo);
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -229,8 +234,10 @@ private:
 
 	//стандартное значение поля обзора камеры
 	//Default camera field of view value
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float CameraDefaultFOV;
 	//значение поля обзора, когда сделано приблежение
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float CameraZoomedFOV;
 
 	//текущее поле обзора в данном кадре
@@ -418,6 +425,9 @@ private:
 	//Половина высоты капсулы когда вприсяде
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	float CrouchingCapsuleHalfHeight;
+
+	//Используется что бы знать нажата ли кнопка прицеливания
+	bool bAimingButtonPressed;
 
 public:
 

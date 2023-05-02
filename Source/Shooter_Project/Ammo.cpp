@@ -2,4 +2,77 @@
 
 
 #include "Ammo.h"
+#include "Components/BoxComponent.h"
+#include "Components/WidgetComponent.h"
+#include "Components/SphereComponent.h"
 
+AAmmo::AAmmo()
+{
+	//Сщздаёт компонент меша патронов и устанавливает его как корень
+	//Construct the AmmoMesh component and set it as the root
+	AmmoMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AmmoMesh"));
+	SetRootComponent(AmmoMesh);
+
+	GetCollisionBox()->SetupAttachment(GetRootComponent());
+	GetPickupWidget()->SetupAttachment(GetRootComponent());
+	GetAreaSphere()->SetupAttachment(GetRootComponent());
+}
+
+void AAmmo::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}
+
+void AAmmo::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+void AAmmo::SetItemProperties(EItemState State)
+{
+	Super::SetItemProperties(State);
+
+	switch (State)
+	{
+	case EItemState::EIS_Pickup:
+		//Устанавливаются свойства меша 
+		//Set Mesh propertie
+		AmmoMesh->SetSimulatePhysics(false);
+		AmmoMesh->SetVisibility(true);
+		AmmoMesh->SetEnableGravity(false);
+		AmmoMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		AmmoMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+	case EItemState::EIS_EquipInterping:
+		// Set mesh properties
+		AmmoMesh->SetSimulatePhysics(false);
+		AmmoMesh->SetEnableGravity(false);
+		AmmoMesh->SetVisibility(true);
+		AmmoMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		AmmoMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+		/*case EItemState::EIS_PickedUp:
+			break;*/
+	case EItemState::EIS_Equipped:
+		//Устанавливаются свойства меша 
+		//Set Mesh propertie
+		AmmoMesh->SetSimulatePhysics(false);
+		AmmoMesh->SetVisibility(true);
+		AmmoMesh->SetEnableGravity(false);
+		AmmoMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		AmmoMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+	case EItemState::EIS_Falling:
+		//Устанавливаются свойства меша 
+		//Set Mesh propertie
+		AmmoMesh->SetSimulatePhysics(true);
+		AmmoMesh->SetVisibility(true);
+		AmmoMesh->SetEnableGravity(true);
+		AmmoMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		AmmoMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		AmmoMesh->SetCollisionResponseToChannel(
+			ECollisionChannel::ECC_WorldStatic,
+			ECollisionResponse::ECR_Block);
+		break;
+	}
+}

@@ -68,7 +68,7 @@ protected:
 
 	//Устанавливает свойства компонента предмета в зависимости от состояния
 	//Sets properties of the items components based on State
-	void SetItemProperties(EItemState State);
+	virtual void SetItemProperties(EItemState State);
 
 	//Вызывается когда ItemInterpTimer заканчивается
 	//Called when ItemInterpTimer is finished
@@ -193,15 +193,13 @@ public:
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE UBoxComponent* GetCollisionBox() const { return CollisionBox; }
 	FORCEINLINE EItemState GetItemState() const { return ItemState; }
-
-	void SetItemState(EItemState State);
-
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; }
+	FORCEINLINE USoundCue* GetPickuoSound() const { return PickuoSound; }
+	FORCEINLINE USoundCue* GetEquipSound() const { return EquipSound; }
+	FORCEINLINE int32 GetItemCount() const { return ItemCount; }
 
 	//Вызвано из класса AShooterCharacter
 	//Called from the AShooterCharacter
 	void StartItemCurve(AShooterCharacter* Char);
-
-	FORCEINLINE USoundCue* GetPickuoSound() const { return PickuoSound; }
-	FORCEINLINE USoundCue* GetEquipSound() const { return EquipSound; }
+	void SetItemState(EItemState State);
 };
