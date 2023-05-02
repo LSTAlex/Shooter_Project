@@ -125,6 +125,30 @@ AShooterCharacter::AShooterCharacter():
 	//Создаёт компонент сцены руки
 	//Create hand scene component
 	HandSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HandSceneComp"));
+
+	//Создание компонентов интерполяции
+	//Create interpolation components
+	WeaponInterpComp = CreateDefaultSubobject<USceneComponent>(TEXT("Weapon Interpolation Component"));
+	WeaponInterpComp->SetupAttachment(GetFollowCamera());
+
+	InterpComp1 = CreateDefaultSubobject<USceneComponent>(TEXT("Interpolation Component 1"));
+	InterpComp1->SetupAttachment(GetFollowCamera());
+
+	InterpComp2 = CreateDefaultSubobject<USceneComponent>(TEXT("Interpolation Component 2"));
+	InterpComp2->SetupAttachment(GetFollowCamera());
+
+	InterpComp3 = CreateDefaultSubobject<USceneComponent>(TEXT("Interpolation Component 3"));
+	InterpComp3->SetupAttachment(GetFollowCamera());
+
+	InterpComp4 = CreateDefaultSubobject<USceneComponent>(TEXT("Interpolation Component 4"));
+	InterpComp4->SetupAttachment(GetFollowCamera());
+
+	InterpComp5 = CreateDefaultSubobject<USceneComponent>(TEXT("Interpolation Component 5"));
+	InterpComp5->SetupAttachment(GetFollowCamera());
+
+	InterpComp6 = CreateDefaultSubobject<USceneComponent>(TEXT("Interpolation Component 6"));
+	InterpComp6->SetupAttachment(GetFollowCamera());
+
 }
 
 // Called when the game starts or when spawned
@@ -145,6 +169,10 @@ void AShooterCharacter::BeginPlay()
 	InitializeAmmoMap();
 
 	GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
+
+	//Создание структур положений интерполяции. Добавление в массив
+	//Create FInterpLocation structs for each interp location.Add array
+	InitializeInterpLocations();
 }
 
 void AShooterCharacter::MoveForward(float Value)
@@ -553,10 +581,7 @@ void AShooterCharacter::SelectButtonPressed()
 	{
 		TraceHitItem->StartItemCurve(this);
 
-		if (TraceHitItem->GetPickuoSound())
-		{
-			UGameplayStatics::PlaySound2D(this, TraceHitItem->GetPickuoSound());
-		}
+
 	}
 }
 
@@ -866,6 +891,30 @@ void AShooterCharacter::PickupAmmo(AAmmo* Ammo)
 	Ammo->Destroy();
 }
 
+void AShooterCharacter::InitializeInterpLocations()
+{
+	FInterpLocation WeaponLocation{ WeaponInterpComp, 0 };
+	InterpLocations.Add(WeaponLocation);
+
+	FInterpLocation Interploc1{ InterpComp1, 0 };
+	InterpLocations.Add(Interploc1);
+
+	FInterpLocation Interploc2{ InterpComp2, 0 };
+	InterpLocations.Add(Interploc2);
+
+	FInterpLocation Interploc3{ InterpComp3, 0 };
+	InterpLocations.Add(Interploc3);
+
+	FInterpLocation Interploc4{ InterpComp4, 0 };
+	InterpLocations.Add(Interploc4);
+
+	FInterpLocation Interploc5{ InterpComp5, 0 };
+	InterpLocations.Add(Interploc5);
+
+	FInterpLocation Interploc6{ InterpComp6, 0 };
+	InterpLocations.Add(Interploc6);
+}
+
 // Called every frame
 void AShooterCharacter::Tick(float DeltaTime)
 {
@@ -1013,5 +1062,16 @@ void AShooterCharacter::GetPickupItem(AItem* Item)
 	{
 		PickupAmmo(Ammo);
 	}
+}
+
+FInterpLocation AShooterCharacter::GetInterpLocations(int32 Index)
+{
+	if (Index <= InterpLocations.Num())
+	{
+		return InterpLocations[Index];
+	}
+
+	return FInterpLocation();
+	
 }
 

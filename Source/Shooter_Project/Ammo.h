@@ -27,6 +27,15 @@ protected:
 	//Override of SetItemProperties so we can set Ammomesh properties
 	virtual void SetItemProperties(EItemState State) override;
 
+
+	UFUNCTION()
+	void AmmoSphereOverlaped(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtheBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult);
 	
 private:
 
@@ -39,6 +48,16 @@ private:
 	//Ammo type for the ammo
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Ammo, meta = (AllowPrivateAccess = "true"))
 	EAmmoType AmmoType;
+
+	//Текстура для иконки патронов
+	//Texture fo the Ammo icon
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Ammo, meta = (AllowPrivateAccess = "true"))
+	UTexture2D* AmmoIconTexture;
+
+	//Сфера пересечения для подъёма патронов
+	//Pverlap sphere for pickup the Ammo
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Ammo, meta = (AllowPrivateAccess = "true"))
+	class USphereComponent* AmmoCollisionSphere;
 
 public:
 
