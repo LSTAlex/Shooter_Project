@@ -187,6 +187,8 @@ protected:
 
 	void InitializeInterpLocations();
 
+	
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -472,27 +474,43 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TArray<FInterpLocation> InterpLocations;
 
+	FTimerHandle PickupSoundTimer;
+	FTimerHandle EquipSoundTimer;
+
+	bool bShouldPlayPickupSound;
+	bool bShouldPlayEquipSound;
+
+	void ResetPickupSound();
+	void ResetEquipSound();
+
+	//Время,которое должно пройти до воспроизведения повторного звука поднятия
+	//Time to wait before we can play another Pickup Sound
+	UPROPERTY(EditAnywhere, BlueprintReadOnly,Category = Items, meta = (AllowPrivateAccess = "true"))
+	float PickupSoundResetTime;
+
+	//Время,которое должно пройти до воспроизведения повторного звука экипировывания
+	//Time to wait before we can play another Equip Sound
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
+	float EquipSoundResetTime;
+
 public:
 
 	//Возвращает субобъект CameraBoom
 	//Returns CameraBoom subobject
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-
 	//возвращает FollowCamera
 	//Returns FollowCamera subobject
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-
 	//возвращает bAiming
 	//Returns bAiming
 	FORCEINLINE bool GetAiming() const { return bAiming; }
-
 	FORCEINLINE int8 GetOverlappedItemCount() const { return OverlappedItemConut; }
-
 	//возвращает состояние персонажа
 	//Return CombatState character
 	FORCEINLINE ECombatState GetCombatState() const { return CombatState; }
-
 	FORCEINLINE bool GetCrouching() const { return bCrouching; }
+	FORCEINLINE bool ShouldPlayPickupSound() const { return bShouldPlayPickupSound; }
+	FORCEINLINE bool ShouldPlayEquipSound() const { return bShouldPlayEquipSound; }
 
 	UFUNCTION(BlueprintCallable)
 	float GetCrosshairSpreadMultiplier() const { return CrosshairSpreadMultiplier; }
@@ -501,9 +519,16 @@ public:
 	//Adds/substracts to/from OverlappedItemConut and updates bShouldTraceForItems
 	void IncrementOverlappedItemCount(int8 Amount);
 
-	FVector GetCameraInterpLocation();
-
 	void GetPickupItem(AItem* Item);
 
 	FInterpLocation GetInterpLocations(int32 Index);
+
+	//Возвращает индекс элемента массива положения интерполяции с наименьшим кол-вом предметов
+	//Return the index in InterpLocations array whith the lowest ItemCount
+	int32 GetInterpLocationIndex();
+
+	void IncrementInterpLocItemCount(int32 Index, int32 Amount);
+
+	void StartPickupSoundTimer();
+	void StartEquipSoundTimer();
 };

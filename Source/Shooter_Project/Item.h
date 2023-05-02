@@ -86,6 +86,12 @@ protected:
 	//Handles item interpolation when in the EquipInterping
 	void ItemInterp(float DeltaTime);
 
+	//Получение положения интерполяции на основе типа предмета
+	//Get interp location based on the item type
+	FVector GetInterpLocation();
+
+	void PlayPickupSound();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -200,6 +206,11 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	EItemType ItemType;
 
+	//Индекс места интерполяции, куда интерполирует этот предмет
+	//Index of the interp location this item is interping to
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	int32 InterpLocIndex;
+
 public:
 
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
@@ -215,4 +226,7 @@ public:
 	//Called from the AShooterCharacter
 	void StartItemCurve(AShooterCharacter* Char);
 	void SetItemState(EItemState State);
+	//Вызывается в функции AShootercharacter::GetPickupItem
+	//Called in AShootercharacter::GetPickupItem
+	void PlayEquipSound();
 };
