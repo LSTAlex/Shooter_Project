@@ -16,6 +16,21 @@ enum class ECombatState : uint8
 	ECS_MAX UMETA(DisplayName = "DefaultMAX")
 };
 
+USTRUCT(BlueprintType)
+struct FInterpLocation
+{
+	GENERATED_BODY()
+
+	//Компанент сцены для использования местоположения во время интерполяции
+	//Scene component to use its location for interping
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	USceneComponent* SceneComponent;
+
+	//Количество предметов, совершающих интерполяцию в это местоположение компонента сцены
+	//Number of items interping to/at this scene comp location
+	int32 ItemCount;
+};
+
 UCLASS()
 class SHOOTER_PROJECT_API AShooterCharacter : public ACharacter
 {
@@ -146,7 +161,7 @@ protected:
 	//Проверяет есть ли патроны того типа, которые использует оружие
 	//Checks to see of we have ammo of the equipped weapon ammo type
 	bool CarryingAmmo();
-#pragma endregion reg2
+
 	//Вызывается из анимационного Blueprint с помощью оповещения GrabClip
 	//Called from animation Blueprint with GrabClip notyfy
 	UFUNCTION(BlueprintCallable)
@@ -164,6 +179,15 @@ protected:
 	//Interps capsule half height when character crouching/standing
 	//Интерполирует половину высоты капсулы когда персонаж вприсяде/стоит
 	void InterpCapsuleHalfHaight(float DelataTime);
+#pragma endregion reg2
+	void Aim();
+	void StopAiming();
+
+	void PickupAmmo(class AAmmo* Ammo);
+
+	void InitializeInterpLocations();
+
+	
 
 public:
 	// Called every frame
@@ -229,8 +253,10 @@ private:
 
 	//стандартное значение поля обзора камеры
 	//Default camera field of view value
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float CameraDefaultFOV;
 	//значение поля обзора, когда сделано приблежение
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float CameraZoomedFOV;
 
 	//текущее поле обзора в данном кадре
@@ -393,7 +419,7 @@ private:
 	//Истенен во время приседания
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool bCrouching;
-#pragma endregion reg1
+
 
 	//Regular movement speed
 	//Обычная скорость ходьбы
@@ -419,36 +445,90 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	float CrouchingCapsuleHalfHeight;
 
+	//Используется что бы знать нажата ли кнопка прицеливания
+	bool bAimingButtonPressed;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* InterpComp1;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* InterpComp2;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* InterpComp3;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* InterpComp4;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* InterpComp5;
+#pragma endregion reg1
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* InterpComp6;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* WeaponInterpComp;
+
+	//массив структур местоположений интерполяций
+	//Array of interp location structs
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	TArray<FInterpLocation> InterpLocations;
+
+	FTimerHandle PickupSoundTimer;
+	FTimerHandle EquipSoundTimer;
+
+	bool bShouldPlayPickupSound;
+	bool bShouldPlayEquipSound;
+
+	void ResetPickupSound();
+	void ResetEquipSound();
+
+	//Время,которое должно пройти до воспроизведения повторного звука поднятия
+	//Time to wait before we can play another Pickup Sound
+	UPROPERTY(EditAnywhere, BlueprintReadOnly,Category = Items, meta = (AllowPrivateAccess = "true"))
+	float PickupSoundResetTime;
+
+	//Время,которое должно пройти до воспроизведения повторного звука экипировывания
+	//Time to wait before we can play another Equip Sound
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
+	float EquipSoundResetTime;
+
 public:
 
 	//Возвращает субобъект CameraBoom
 	//Returns CameraBoom subobject
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-
 	//возвращает FollowCamera
 	//Returns FollowCamera subobject
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-
 	//возвращает bAiming
 	//Returns bAiming
 	FORCEINLINE bool GetAiming() const { return bAiming; }
+	FORCEINLINE int8 GetOverlappedItemCount() const { return OverlappedItemConut; }
+	//возвращает состояние персонажа
+	//Return CombatState character
+	FORCEINLINE ECombatState GetCombatState() const { return CombatState; }
+	FORCEINLINE bool GetCrouching() const { return bCrouching; }
+	FORCEINLINE bool ShouldPlayPickupSound() const { return bShouldPlayPickupSound; }
+	FORCEINLINE bool ShouldPlayEquipSound() const { return bShouldPlayEquipSound; }
 
 	UFUNCTION(BlueprintCallable)
-		float GetCrosshairSpreadMultiplier() const { return CrosshairSpreadMultiplier; }
-
-	FORCEINLINE int8 GetOverlappedItemCount() const { return OverlappedItemConut; }
+	float GetCrosshairSpreadMultiplier() const { return CrosshairSpreadMultiplier; }
 
 	//Увеличивает или уменьшает OverlappedItemConut и обновляет bShouldTraceForItems
 	//Adds/substracts to/from OverlappedItemConut and updates bShouldTraceForItems
 	void IncrementOverlappedItemCount(int8 Amount);
 
-	FVector GetCameraInterpLocation();
-
 	void GetPickupItem(AItem* Item);
 
-	//возвращает состояние персонажа
-	//Return CombatState character
-	FORCEINLINE ECombatState GetCombatState() const { return CombatState; }
+	FInterpLocation GetInterpLocations(int32 Index);
 
-	FORCEINLINE bool GetCrouching() const { return bCrouching; }
+	//Возвращает индекс элемента массива положения интерполяции с наименьшим кол-вом предметов
+	//Return the index in InterpLocations array whith the lowest ItemCount
+	int32 GetInterpLocationIndex();
+
+	void IncrementInterpLocItemCount(int32 Index, int32 Amount);
+
+	void StartPickupSoundTimer();
+	void StartEquipSoundTimer();
 };

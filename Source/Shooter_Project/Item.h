@@ -28,6 +28,14 @@ enum class EItemState : uint8
 	EIS_MAX UMETA(DisplayName = "DefaultMAX")
 };
 
+UENUM(BlueprintType)
+enum class EItemType : uint8
+{
+	EIT_Ammo UMETA(DisplayName = "Ammo"),
+	EIT_Weapon UMETA(DisplayName = "Weapon"),
+	EIT_MAX UMETA(DisplayName = "DefaultMAX")
+};
+
 
 UCLASS()
 class SHOOTER_PROJECT_API AItem : public AActor
@@ -68,7 +76,7 @@ protected:
 
 	//Устанавливает свойства компонента предмета в зависимости от состояния
 	//Sets properties of the items components based on State
-	void SetItemProperties(EItemState State);
+	virtual void SetItemProperties(EItemState State);
 
 	//Вызывается когда ItemInterpTimer заканчивается
 	//Called when ItemInterpTimer is finished
@@ -77,6 +85,12 @@ protected:
 	//Управляет интерполяцией предмета, который находится в состоянии EquipInterping
 	//Handles item interpolation when in the EquipInterping
 	void ItemInterp(float DeltaTime);
+
+	//Получение положения интерполяции на основе типа предмета
+	//Get interp location based on the item type
+	FVector GetInterpLocation();
+
+	void PlayPickupSound();
 
 public:	
 	// Called every frame
@@ -187,21 +201,32 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	class USoundCue* EquipSound;
 
+	//Перечисление с типами предметов
+	//Enum for the type of item this Item is
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	EItemType ItemType;
+
+	//Индекс места интерполяции, куда интерполирует этот предмет
+	//Index of the interp location this item is interping to
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	int32 InterpLocIndex;
+
 public:
 
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE UBoxComponent* GetCollisionBox() const { return CollisionBox; }
 	FORCEINLINE EItemState GetItemState() const { return ItemState; }
-
-	void SetItemState(EItemState State);
-
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; }
+	FORCEINLINE USoundCue* GetPickuoSound() const { return PickuoSound; }
+	FORCEINLINE USoundCue* GetEquipSound() const { return EquipSound; }
+	FORCEINLINE int32 GetItemCount() const { return ItemCount; }
 
 	//Вызвано из класса AShooterCharacter
 	//Called from the AShooterCharacter
 	void StartItemCurve(AShooterCharacter* Char);
-
-	FORCEINLINE USoundCue* GetPickuoSound() const { return PickuoSound; }
-	FORCEINLINE USoundCue* GetEquipSound() const { return EquipSound; }
+	void SetItemState(EItemState State);
+	//Вызывается в функции AShootercharacter::GetPickupItem
+	//Called in AShootercharacter::GetPickupItem
+	void PlayEquipSound();
 };
