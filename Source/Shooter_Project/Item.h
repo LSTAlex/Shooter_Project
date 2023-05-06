@@ -92,6 +92,18 @@ protected:
 
 	void PlayPickupSound();
 
+	virtual void InitializeCustomDepth();
+
+	virtual void OnConstruction(const FTransform& Transform) override;
+
+	void EnableGlowMaterial();
+
+	void UpdatePulse();
+
+	void ResetPulseTimer();
+
+	void StartPulseTimer();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -181,7 +193,7 @@ private:
 	//X and Y for the Item while interping in the EquipInterping state
 	float ItemInterpX;
 	float ItemInterpY;
-#pragma endregion reg1
+
 	//—мещение исходного рыскань€ между камерой и подвеграющимс€ интерпол€ции объектом
 	//Initial Yaw offset between the camera and the interping item
 	float InterpInitialYawOffset;
@@ -211,6 +223,48 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	int32 InterpLocIndex;
 
+	//»ндекс дл€ материаала, который будет мен€тьс€ в ходе выполнени€ программы
+	//Index for the material like to change at runtime
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	int32 MaterialIndex;
+#pragma endregion reg1
+
+	//ƒинамический экземпл€р, который можно мен€ть в ходе выполнени€
+	//Dynamic instance that can change at runtime
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	UMaterialInstanceDynamic* DynamicMaterialInstance;
+
+	//Ёкземпл€р материала используемый с динамическим материалом
+	//Material instance used with the dynamic material instance
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	UMaterialInstance* MaterialInstance;
+
+	bool bCanChangeCustomDepth;
+
+	// рива€ дл€ управлени€ параметрами динамического материала
+	//Curve to drive the dynamic material parameters
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	class UCurveVector* PulseCurve;
+
+	FTimerHandle PulseTimer;
+
+	//¬рем€ дл€ таймера пульсации
+	//Time for the PulseTimer
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	float PulseCurveTime;
+
+	UPROPERTY(VisibleAnywhere, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	float GlowAmount;
+
+	UPROPERTY(VisibleAnywhere, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	float FresnelExponent;
+
+	UPROPERTY(VisibleAnywhere, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	float FresnelReflectFraction;
+
+
+
+
 public:
 
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
@@ -229,4 +283,9 @@ public:
 	//¬ызываетс€ в функции AShootercharacter::GetPickupItem
 	//Called in AShootercharacter::GetPickupItem
 	void PlayEquipSound();
+
+	virtual void EnableCustomDepth();
+
+	virtual void DisableCustomDepth();
+	void DisableGlowMaterial();
 };

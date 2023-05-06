@@ -172,6 +172,9 @@ void AShooterCharacter::BeginPlay()
 	//Spawn the default weapon and attach it to the mesh
 	EquipWeapon(SpawnDefaultWeapon());
 
+	EquippedWeapon->DisableCustomDepth();
+	EquippedWeapon->DisableGlowMaterial();
+
 	InitializeAmmoMap();
 
 	GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
@@ -515,6 +518,7 @@ void AShooterCharacter::TraceForItems()
 				//показать Widget поднимаемого предмета
 				//Show Item's pickup Widget
 				TraceHitItem->GetPickupWidget()->SetVisibility(true);
+				TraceHitItem->EnableCustomDepth();
 			}
 
 			if (TraceHitItemLastFrame)
@@ -524,6 +528,7 @@ void AShooterCharacter::TraceForItems()
 					//трассировка попала в другой AItem в этом кадре или AItem нет 
 					//We are hitting a different AItem this frame or AItem is null
 					TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+					TraceHitItemLastFrame->DisableCustomDepth();
 				}
 			}
 			//хранитс€ ссылка на предмет найденный при помощи трассировки дл€ следующего кадра 
@@ -536,6 +541,7 @@ void AShooterCharacter::TraceForItems()
 		//Ќикакие предметы больше не пересечены, не нужно показывать PickupWidget предметов
 		//No longer overlapping any items. Item last frame should not show PickupWidget
 		TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+		TraceHitItemLastFrame->DisableCustomDepth();
 	}
 }
 
