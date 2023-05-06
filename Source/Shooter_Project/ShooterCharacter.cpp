@@ -171,7 +171,7 @@ void AShooterCharacter::BeginPlay()
 	//Призыв стандартного оружия и  его прикрепление к мешу
 	//Spawn the default weapon and attach it to the mesh
 	EquipWeapon(SpawnDefaultWeapon());
-
+	Inventory.Add(EquippedWeapon);
 	EquippedWeapon->DisableCustomDepth();
 	EquippedWeapon->DisableGlowMaterial();
 
@@ -1101,7 +1101,17 @@ void AShooterCharacter::GetPickupItem(AItem* Item)
 
 	if (Weapon)
 	{
-		SwapWeapon(Weapon);
+		if (Inventory.Num() < INVENTORY_CAPACITY)
+		{
+			Inventory.Add(Weapon);
+		}
+		//Инвентарь полон. Заменяем оружие.
+		//Inventory is full. Swap weapon
+		else
+		{
+			SwapWeapon(Weapon);
+		}
+		
 	}
 
 	auto Ammo = Cast<AAmmo>(Item);
