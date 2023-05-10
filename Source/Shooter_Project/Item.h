@@ -282,8 +282,13 @@ private:
 
 	//Слот в массиве инвентаря
 	//Slot in the inventory array
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Inventory, meta = (AllowPrivateAccess = "true"))
 	int32 SlotIndex;
+
+	//Имеет значение true, когда инвентарь персонажа полон
+	//True when the character inventory is full
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Inventory, meta = (AllowPrivateAccess = "true"))
+	bool bCharacterInventoryFull;
 
 
 public:
@@ -298,6 +303,7 @@ public:
 	FORCEINLINE int32 GetItemCount() const { return ItemCount; }
 	FORCEINLINE int32 GetISlotIndex() const { return SlotIndex; }
 	FORCEINLINE void SetISlotIndex(int32 Index) { SlotIndex = Index; }
+	FORCEINLINE void SetCharacterInventoryFull(bool bFull) { bCharacterInventoryFull = bFull; }
 
 	//Вызвано из класса AShooterCharacter
 	//Called from the AShooterCharacter

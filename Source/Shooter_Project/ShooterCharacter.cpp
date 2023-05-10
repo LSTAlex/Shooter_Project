@@ -525,6 +525,18 @@ void AShooterCharacter::TraceForItems()
 				//Show Item's pickup Widget
 				TraceHitItem->GetPickupWidget()->SetVisibility(true);
 				TraceHitItem->EnableCustomDepth();
+				if (Inventory.Num() >= INVENTORY_CAPACITY)
+				{
+					//Инвентарь полон
+					//Inventory is full
+					TraceHitItem->SetCharacterInventoryFull(true);
+				}
+				else
+				{
+					//В инвентаре есть место
+					//Inventory has room
+					TraceHitItem->SetCharacterInventoryFull(false);
+				}
 			}
 
 			if (TraceHitItemLastFrame)
