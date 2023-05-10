@@ -227,7 +227,6 @@ private:
 	//Index for the material like to change at runtime
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	int32 MaterialIndex;
-#pragma endregion reg1
 
 	//Динамический экземпляр, который можно менять в ходе выполнения
 	//Dynamic instance that can change at runtime
@@ -274,6 +273,17 @@ private:
 	//Icon for this item  in the inventory
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Inventory, meta = (AllowPrivateAccess = "true"))
 	UTexture2D* IconItem;
+#pragma endregion reg1
+		
+	//Иконка патронов для этого предмета в инвентаре
+	//Icon ammo for this item  in the inventory
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Inventory, meta = (AllowPrivateAccess = "true"))
+	UTexture2D* AmmoIcon;
+
+	//Слот в массиве инвентаря
+	//Slot in the inventory array
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	int32 SlotIndex;
 
 
 public:
@@ -286,6 +296,8 @@ public:
 	FORCEINLINE USoundCue* GetPickuoSound() const { return PickuoSound; }
 	FORCEINLINE USoundCue* GetEquipSound() const { return EquipSound; }
 	FORCEINLINE int32 GetItemCount() const { return ItemCount; }
+	FORCEINLINE int32 GetISlotIndex() const { return SlotIndex; }
+	FORCEINLINE void SetISlotIndex(int32 Index) { SlotIndex = Index; }
 
 	//Вызвано из класса AShooterCharacter
 	//Called from the AShooterCharacter
@@ -299,4 +311,6 @@ public:
 
 	virtual void DisableCustomDepth();
 	void DisableGlowMaterial();
+
+	
 };

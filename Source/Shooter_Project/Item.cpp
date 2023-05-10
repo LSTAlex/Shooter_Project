@@ -11,7 +11,7 @@
 
 
 // Sets default values
-AItem::AItem():
+AItem::AItem() :
 	ItemName(FString("Default")),
 	ItemCount(0),
 	ItemRarity(EItemRarity::EIR_Common),
@@ -34,7 +34,8 @@ AItem::AItem():
 	GlowAmount(150.f),
 	FresnelExponent(3.f),
 	FresnelReflectFraction(4.f),
-	PulseCurveTime(5.f)
+	PulseCurveTime(5.f),
+	SlotIndex(0)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -227,6 +228,21 @@ void AItem::SetItemProperties(EItemState State)
 		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		break;
+	case EItemState::EIS_PickedUp:
+		PickupWidget->SetVisibility(false);
+		// Set mesh properties
+		ItemMesh->SetSimulatePhysics(false);
+		ItemMesh->SetEnableGravity(false);
+		ItemMesh->SetVisibility(false);
+		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		// Set AreaSphere properties
+		AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		// Set CollisionBox properties
+		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
 	}
 }
 
@@ -239,7 +255,6 @@ void AItem::FinishInterping()
 		//Subtract 1 from the Item Count of the interp location struct
 		Character->IncrementInterpLocItemCount(InterpLocIndex,-1);
 		Character->GetPickupItem(this);
-		SetItemState(EItemState::EIS_PickedUp);
 	}
 	//Возвращает обратно нормальный масштаб
 	SetActorScale3D(FVector(1.f));

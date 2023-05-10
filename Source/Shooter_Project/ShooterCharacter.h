@@ -31,6 +31,9 @@ struct FInterpLocation
 	int32 ItemCount;
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FEquipItemDelegate, int32, CurrentSlotIndex, int32, NewSlotIndex);
+
+
 UCLASS()
 class SHOOTER_PROJECT_API AShooterCharacter : public ACharacter
 {
@@ -187,7 +190,14 @@ protected:
 
 	void InitializeInterpLocations();
 
-	
+	void FKeyPressed();
+	void OneKeyPressed();
+	void TwoKeyPressed();
+	void ThreeKeyPressed();
+	void FourKeyPressed();
+	void FiveKeyPressed();
+
+	void ExchangeInventoryItems(int32 CurrentItemIndex, int32 NewItemindex);
 
 public:
 	// Called every frame
@@ -462,7 +472,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	USceneComponent* InterpComp5;
-#pragma endregion reg1
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	USceneComponent* InterpComp6;
 
@@ -487,7 +497,7 @@ private:
 	//Time to wait before we can play another Pickup Sound
 	UPROPERTY(EditAnywhere, BlueprintReadOnly,Category = Items, meta = (AllowPrivateAccess = "true"))
 	float PickupSoundResetTime;
-
+#pragma endregion reg1
 	//Время,которое должно пройти до воспроизведения повторного звука экипировывания
 	//Time to wait before we can play another Equip Sound
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
@@ -499,6 +509,11 @@ private:
 	TArray<AItem*> Inventory;
 
 	const int32 INVENTORY_CAPACITY{ 6 };
+
+	//Делегат для пересылки информации слота к панели инвентаря при экипировывании предмета
+	//Delegate for sending slot information to Inventorybar when equipping
+	UPROPERTY(BlueprintAssignable, Category = Delegates, meta = (AllowPrivateAccess = "true"))
+	FEquipItemDelegate EquipItemDelegate;
 
 public:
 
