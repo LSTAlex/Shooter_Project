@@ -99,11 +99,11 @@ AShooterCharacter::AShooterCharacter():
 	CameraBoom->SetupAttachment(RootComponent);
 	//Следует за персонажем на этом расстоянии
 	//The camera foolows at this distance behind the character
-	CameraBoom->TargetArmLength = 180.f;
+	CameraBoom->TargetArmLength = 239.f;
 	//вращает рычаг, основываясь на вращении контроллера
 	//Rotate the arm based on the controller
 	CameraBoom->bUsePawnControlRotation = true;
-	CameraBoom->SocketOffset = FVector(0.f, 50.f, 70.f);
+	CameraBoom->SocketOffset = FVector(0.f, 35.f, 80.f);
 
 	//создание следующей камеры
 	//Create a follow camera
