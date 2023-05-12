@@ -32,6 +32,7 @@ struct FInterpLocation
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FEquipItemDelegate, int32, CurrentSlotIndex, int32, NewSlotIndex);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FHightlightIconDelegate, int32, SlotIndex, bool, BStartAnimation);
 
 
 UCLASS()
@@ -109,7 +110,7 @@ protected:
 	void StartFireTimer();
 
 	UFUNCTION()
-		void AutoFireReset();
+	void AutoFireReset();
 
 	//Линейная трассировка для предметов под перекрестием
 	//Line trace for items under the crosshairs
@@ -125,7 +126,7 @@ protected:
 
 	//Берёт оружие и прикрепляет его к мешу
 	//Takes a weapon and attaches it to the mesh
-	void EquipWeapon(AWeapon* WeaponToEquip);
+	void EquipWeapon(AWeapon* WeaponToEquip, bool bSwapping = false);
 
 	//Открепляет оружие и позволяет ему падать на землю
 	//Detach weapon and let it fall to the ground
@@ -198,6 +199,11 @@ protected:
 	void FiveKeyPressed();
 
 	void ExchangeInventoryItems(int32 CurrentItemIndex, int32 NewItemindex);
+
+	int32 GetEmptyinventorySlot();
+
+	void HightlightInventorySlot();
+	
 
 public:
 	// Called every frame
@@ -515,6 +521,16 @@ private:
 	UPROPERTY(BlueprintAssignable, Category = Delegates, meta = (AllowPrivateAccess = "true"))
 	FEquipItemDelegate EquipItemDelegate;
 
+	//Делегат для пересылки информации слота о воспроизведении анимации
+	//Delegate for sending slot information for playing the icon animation
+	UPROPERTY(BlueprintAssignable, Category = Delegates, meta = (AllowPrivateAccess = "true"))
+	FHightlightIconDelegate HightlightIconDelegate;
+
+	//Индекс текущего выделенного слота
+	//The index for the currently Hightlighted slot
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Inventory, meta = (AllowPrivateAccess = "true"))
+	int32 HightlightSlot;
+
 public:
 
 	//Возвращает субобъект CameraBoom
@@ -553,4 +569,6 @@ public:
 
 	void StartPickupSoundTimer();
 	void StartEquipSoundTimer();
+
+	void UnHightlightInventorySlot();
 };

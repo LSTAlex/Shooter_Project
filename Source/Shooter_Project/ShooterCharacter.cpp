@@ -87,7 +87,10 @@ AShooterCharacter::AShooterCharacter():
 	bShouldPlayPickupSound(true),
 	bShouldPlayEquipSound(true),
 	PickupSoundResetTime(0.2f),
-	EquipSoundResetTime(0.2f)
+	EquipSoundResetTime(0.2f),
+	//Свойства анимации иконки
+	//Icon animation property
+	HightlightSlot(-1)
 	
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -514,6 +517,29 @@ void AShooterCharacter::TraceForItems()
 		if (ItemTraceResult.bBlockingHit)
 		{
 			TraceHitItem = Cast<AItem>(ItemTraceResult.Actor);
+			const auto TraceHitWeapon = Cast<AWeapon>(TraceHitItem);
+			if (TraceHitWeapon)
+			{
+				if (HightlightSlot == -1) 
+				{
+					//Сейчас слот не выделяется. Выделить один 
+					//Not currently highlighting slot.highlight one
+					HightlightInventorySlot();
+				}
+			}
+			else
+			{
+				//Был ли слот выделен? 
+				//Is a slot being highlight?
+				if (HightlightSlot != -1)
+				{
+					//Снять выделение с слота
+					//UnHighlight the slot
+					UnHightlightInventorySlot();
+				}
+				
+			}
+
 			if (TraceHitItem && TraceHitItem->GetItemState() == EItemState::EIS_EquipInterping)
 			{
 				TraceHitItem = nullptr;
@@ -576,7 +602,7 @@ AWeapon* AShooterCharacter::SpawnDefaultWeapon()
 	return nullptr;
 }
 
-void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip)
+void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip, bool bSwapping)
 {
 	if (WeaponToEquip)
 	{	
@@ -593,7 +619,7 @@ void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip)
 			//-1 == ещё нет экипированного оружия. Не нужно делать обратную анимацию иконки
 			EquipItemDelegate.Broadcast(-1, WeaponToEquip->GetISlotIndex());
 		}
-		else
+		else if (!bSwapping)
 		{
 			EquipItemDelegate.Broadcast(EquippedWeapon->GetISlotIndex(), WeaponToEquip->GetISlotIndex());
 		}
@@ -637,7 +663,7 @@ void AShooterCharacter::SwapWeapon(AWeapon* WeaponToSwap)
 	}
 
 	DropWeapon();
-	EquipWeapon(WeaponToSwap);
+	EquipWeapon(WeaponToSwap, true);
 	TraceHitItem = nullptr;
 	TraceHitItemLastFrame = nullptr;
 }
@@ -1010,6 +1036,39 @@ void AShooterCharacter::ExchangeInventoryItems(int32 CurrentItemIndex, int32 New
 	EquipWeapon(NewWeapon);
 	OldEquippedWeapon->SetItemState(EItemState::EIS_PickedUp);
 	NewWeapon->SetItemState(EItemState::EIS_Equipped);
+}
+
+int32 AShooterCharacter::GetEmptyinventorySlot()
+{
+	for (int32 i = 0; i < Inventory.Num(); i++)
+	{
+		if (Inventory[i] == nullptr)
+		{
+			return i;
+		}
+	}
+
+	if (Inventory.Num() < INVENTORY_CAPACITY)
+	{
+		return Inventory.Num();
+	}
+
+	//инвентарь полон
+	//Inventory is full
+	return -1;
+}
+
+void AShooterCharacter::HightlightInventorySlot()
+{
+	const int32 EmprySlot{ GetEmptyinventorySlot() };
+	HightlightIconDelegate.Broadcast(EmprySlot, true);
+	HightlightSlot = EmprySlot;
+}
+
+void AShooterCharacter::UnHightlightInventorySlot()
+{
+	HightlightIconDelegate.Broadcast(HightlightSlot, false);
+	HightlightSlot = -1;
 }
 
 int32 AShooterCharacter::GetInterpLocationIndex()
