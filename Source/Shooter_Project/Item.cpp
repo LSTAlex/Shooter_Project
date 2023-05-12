@@ -397,6 +397,47 @@ void AItem::OnConstruction(const FTransform& Transform)
 		ItemMesh->SetMaterial(MaterialIndex, DynamicMaterialInstance);
 	}
 	EnableGlowMaterial();
+	//Загрузка данных в таблицу данных 
+	//Load the data in the item rarity data table
+
+	//Путь к таблице данных редкости предмета
+	//Path to the item rarity data table
+	FString RarityTablePath(TEXT("DataTable'/Game/_Game/DataTable/ItemRarityDataTable.ItemRarityDataTable'"));
+	UDataTable* RariryTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(),nullptr,*RarityTablePath));
+	if (RariryTableObject)
+	{
+		FItemRarityTable* RarityRow = nullptr;
+		switch (ItemRarity)
+		{
+		case EItemRarity::EIR_Damaged:
+			RarityRow = RariryTableObject->FindRow<FItemRarityTable>(FName("Damaged"), TEXT(""));
+			break;
+		case EItemRarity::EIR_Common:
+			RarityRow = RariryTableObject->FindRow<FItemRarityTable>(FName("Common"), TEXT(""));
+			break;
+		case EItemRarity::EIR_Uncommon:
+			RarityRow = RariryTableObject->FindRow<FItemRarityTable>(FName("UnCommon"), TEXT(""));
+			break;
+		case EItemRarity::EIR_Rare:
+			RarityRow = RariryTableObject->FindRow<FItemRarityTable>(FName("Rare"), TEXT(""));
+			break;
+		case EItemRarity::EIR_Legendary:
+			RarityRow = RariryTableObject->FindRow<FItemRarityTable>(FName("Legendary"), TEXT(""));
+			break;
+		case EItemRarity::EIR_MAX:
+			break;
+		default:
+			break;
+		}
+		if (RarityRow)
+		{
+			GlowColor = RarityRow->GlowColor;
+			LightColor = RarityRow->LightColor;
+			DarkColor = RarityRow->DarkColor;
+			NumberOfStars = RarityRow->NumberOfStars;
+			IconBackground = RarityRow->IconColorBackground;
+		}
+	}
 }
 
 void AItem::EnableGlowMaterial()
