@@ -57,6 +57,9 @@ struct FItemRarityTable: public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* IconColorBackground;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 CustomDepthStencil;
+
 };
 
 
