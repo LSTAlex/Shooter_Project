@@ -5,7 +5,8 @@
 #include "ShooterCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-
+#include "Weapon.h"
+#include "WeaponType.h"
 
 UShooterAnimInstance::UShooterAnimInstance():
 	Speed(0.0),
@@ -24,7 +25,9 @@ UShooterAnimInstance::UShooterAnimInstance():
 	bReloading(false),
 	OffsetState(EOffsetState::EOS_Hip),
 	RecoilWeight(1.f),
-	bTurningInPlace(false)
+	bTurningInPlace(false),
+	bShouldUseFABRIK(false),
+	EquippedWeaponType(EWeaponType::EWT_MAX)
 {
 
 }
@@ -40,6 +43,7 @@ void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 	{
 		bCrouching = ShooterCharacter->GetCrouching();
 		bReloading = ShooterCharacter->GetCombatState() == ECombatState::ECS_Reloading;
+		bShouldUseFABRIK = ShooterCharacter->GetCombatState() == ECombatState::ECS_Unoccupied || ShooterCharacter->GetCombatState() == ECombatState::ECS_FireTimerInProgress;
 		
 		//получение скорости персонажа из значения velociti
 		//Get the speed of the character from velocity
@@ -86,6 +90,12 @@ void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 		else
 		{
 			OffsetState = EOffsetState::EOS_Hip;
+		}
+		//Проверяет есть ли у персонажа валидное экипированное оружие
+		//Check if ShooterCharacter has a valid EquippedWeapon
+		if (ShooterCharacter->GetEquippedWeapon())
+		{
+			EquippedWeaponType = ShooterCharacter->GetEquippedWeapon()->GetWeaponType();
 		}
 	}
 

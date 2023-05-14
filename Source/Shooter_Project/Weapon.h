@@ -6,15 +6,9 @@
 #include "Item.h"
 #include "AmmoType.h"
 #include "Engine/DataTable.h"
+#include "WeaponType.h"
 #include "Weapon.generated.h"
 
-UENUM(BlueprintType)
-enum class EWeaponType: uint8
-{
-	EWT_SubmachinGun UMETA(DisplayName = "SubmachinGun"),
-	EWT_AssaultRifle UMETA(DisplayName = "AssaultRifle"),
-	EWT_MAX UMETA(DisplayName = "DefaultMAX")
-};
 
 USTRUCT(BlueprintType)
 struct FWeaponDataTable: public FTableRowBase
@@ -53,6 +47,12 @@ struct FWeaponDataTable: public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 Materialindex;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName ClipBoneName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName ReloadMontageSection;
 
 };
 
@@ -125,6 +125,17 @@ private:
 
 public:
 
+	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
+	FORCEINLINE EAmmoType GetAmmoType() const { return AmmoType; }
+	FORCEINLINE FName GetReloadMontageSection() const { return ReloadMontageSection; }
+	FORCEINLINE void GetReloadMontageSection(FName Name) {  ReloadMontageSection = Name; }
+	FORCEINLINE int32 GetMagazineCapacity() const { return MagazineCapacity; }
+	FORCEINLINE FName GetClipBoneName() const { return ClipBoneName; }
+	FORCEINLINE void SetClipBoneName(FName Name) {  ClipBoneName = Name; }
+	FORCEINLINE void SetMovingClip(bool Move) { bMoovingClip = Move; }
+
+	void ReloadAmmo(int32 Amount);
+
 	//Добавляет импульс к оружию
 	//Add impulse to the weapon
 	void ThrowWeapon();
@@ -134,20 +145,6 @@ public:
 	//Вызывается из класса персонажа при стрельбе из оружия
 	//Called from Character class when firing weapon
 	void DecrementAmmo();
-
-	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
-
-	FORCEINLINE EAmmoType GetAmmoType() const { return AmmoType; }
-
-	FORCEINLINE FName GetReloadMontageSection() const { return ReloadMontageSection; }
-
-	FORCEINLINE int32 GetMagazineCapacity() const { return MagazineCapacity; }
-
-	void ReloadAmmo(int32 Amount);
-
-	FORCEINLINE FName GetClipBoneName() const { return ClipBoneName; }
-	
-	FORCEINLINE void SetMovingClip(bool Move) { bMoovingClip = Move; }
 
 	//true - если магазин полон, иначе false
 	//return true if magazine full, else - false
