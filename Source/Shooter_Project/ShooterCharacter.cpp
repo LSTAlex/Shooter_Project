@@ -1291,4 +1291,3 @@ FInterpLocation AShooterCharacter::GetInterpLocations(int32 Index)
 	return FInterpLocation();
 	
 }
-
