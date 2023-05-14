@@ -25,18 +25,16 @@ struct FWeaponDataTable: public FTableRowBase
 	EAmmoType AmmoType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 WeapionAmmo;
+	int32 WeaponAmmo;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 MagazineCapasity;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class USoundCue* PickupSound;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USoundCue* EquipSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	class UWidgetComponent* PickupWidget;
+	USoundCue* EquipSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USkeletalMesh* ItemMesh;
@@ -66,6 +64,8 @@ public:
 protected:
 	
 	void StopFalling();
+
+	virtual void OnConstruction(const FTransform& Transform) override;
 
 private:
 

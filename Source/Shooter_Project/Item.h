@@ -355,10 +355,15 @@ public:
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; }
 	FORCEINLINE USoundCue* GetPickuoSound() const { return PickuoSound; }
 	FORCEINLINE USoundCue* GetEquipSound() const { return EquipSound; }
+	FORCEINLINE void SetPickuoSound(USoundCue* Sound) { PickuoSound = Sound; }
+	FORCEINLINE void SetEquipSound(USoundCue* Sound) { EquipSound = Sound; }
 	FORCEINLINE int32 GetItemCount() const { return ItemCount; }
 	FORCEINLINE int32 GetISlotIndex() const { return SlotIndex; }
 	FORCEINLINE void SetISlotIndex(int32 Index) { SlotIndex = Index; }
 	FORCEINLINE void SetCharacterInventoryFull(bool bFull) { bCharacterInventoryFull = bFull; }
+	FORCEINLINE void SetItemName(FString Name) { ItemName = Name; }
+	FORCEINLINE void SetItemIcon(UTexture2D* Icon) { IconItem = Icon; }
+	FORCEINLINE void SetAmmoIcon(UTexture2D* Icon) { AmmoIcon = Icon; }
 
 	//Вызвано из класса AShooterCharacter
 	//Called from the AShooterCharacter
