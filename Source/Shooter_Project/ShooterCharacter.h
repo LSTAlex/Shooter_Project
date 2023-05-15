@@ -236,16 +236,6 @@ private:
 	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	float BaseLookUpRate;
 
-	//рандомный звук выстрела из оружия
-	//Randomized gunshoot sound cue
-	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	class USoundCue* FireSound;
-
-	//вспышка, призванная в сокете ствола
-	//Flash spawned at BarrelSocket
-	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	class UParticleSystem* MuzzelFlash;
-
 	//монтаж для стрельбы из оружия
 	//Montage for firing the weapon
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
@@ -346,10 +336,6 @@ private:
 	//имеет значение true - когда может стрелять,false - когда ожидает возможности стрелять
 	//True when we can fire. False when waiting for the timer
 	bool bShouldFire;
-
-	//темп автоматического огня
-	//rate of automatic gun fire
-	float AutomaticFireRate;
 
 	//устанавливает таймер между выстрелами
 	//sets a timer between gunshots
