@@ -80,6 +80,12 @@ struct FWeaponDataTable: public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USoundCue* FireSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName BoneToHide;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bAutomatic;
 };
 
 UCLASS()
@@ -99,8 +105,15 @@ protected:
 
 	virtual void OnConstruction(const FTransform& Transform) override;
 
+	virtual void BeginPlay() override;
+
+	void FinishMovingSlide();
+
+	void UpdateSlideDisplacement();
+
 private:
 
+#pragma region reg1
 	FTimerHandle ThrowWeaponTimer;
 
 	float ThrowWeaponTime;
@@ -180,7 +193,45 @@ private:
 	//Sound played when the weapon is fired
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = DataTable, meta = (AllowPrivateAccess = "true"))
 	USoundCue* FireSound;
+#pragma endregion reg1
+	//»м€ кости, котора€ будет спр€тана
+	//Name of the bone to hide
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = DataTable, meta = (AllowPrivateAccess = "true"))
+	FName BoneToHide;
 
+	//«начение того,на сколько затвор пистолета отодвигаетс€ назад, во врем€ выстрела
+	//Amount that the slide is pushed back during pistol
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pistol, meta = (AllowPrivateAccess = "true"))
+	float SlideDisplacement;
+
+	// рива€ дл€ смещени€ затвора
+	//Curve for the slide displacement
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pistol, meta = (AllowPrivateAccess = "true"))
+	UCurveFloat* SlideDisplacementCurve;
+
+	//“аймер дл€ обновлени€ смещени€ затвора
+	//Timer handle for updating SlideDisplacement
+	FTimerHandle SlideTimer;
+
+	//¬рем€ дл€ смещени€ затвора во врем€ выстрела из пистолета
+	//Time for displacement the slide during pistol fire
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pistol, meta = (AllowPrivateAccess = "true"))
+	float SlideDisplacementTime;
+
+	//»стина при перемещении затвора пистолета
+	//True when moving the pistol slide
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pistol, meta = (AllowPrivateAccess = "true"))
+	bool bMovingSlide;
+
+	//ћаксимальное рассто€ние дл€ движени€ затвора пистолета
+	//Max distance for the slide on the pistol
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pistol, meta = (AllowPrivateAccess = "true"))
+	float MaxSlideDisplacement;
+
+	//»стина дл€ автоматической стрельбы
+	//True for auto gunfire
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	bool bAutomatic;
 
 public:
 
@@ -195,6 +246,10 @@ public:
 	FORCEINLINE float GetAutoFireRate() const { return AutoFireRate; }
 	FORCEINLINE UParticleSystem* GetMuzzleFlash() const { return MuzzleFlash; }
 	FORCEINLINE USoundCue* GetFireSound() const { return FireSound; }
+	FORCEINLINE bool GetAutomatic() const { return bAutomatic; }
+
+
+	void StartSlideTimer();
 
 
 	void ReloadAmmo(int32 Amount);

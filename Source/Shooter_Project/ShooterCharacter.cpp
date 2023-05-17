@@ -282,6 +282,12 @@ void AShooterCharacter::FireWeapon()
 		//запускает таймер BulletFire для перекрестий
 		//Start BulletFire timer for crosshair
 		StartCrosshairBulletFire();
+		if (EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Pistol)
+		{
+			//Запуск таймера движения затвора
+			//Start moving slide timer
+			EquippedWeapon->StartSlideTimer();
+		}
 	}
 }
 
@@ -441,9 +447,10 @@ void AShooterCharacter::StartFireTimer()
 void AShooterCharacter::AutoFireReset()
 {
 	CombatState = ECombatState::ECS_Unoccupied;
+	if (EquippedWeapon == nullptr)return;
 	if (WeaponHasAmmo())
 	{
-		if (bFireButtonPressed)
+		if (bFireButtonPressed && EquippedWeapon->GetAutomatic())
 		{
 			FireWeapon();
 		}
