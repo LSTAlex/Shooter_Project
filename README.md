@@ -1,9 +1,3 @@
-# Shooter_Project
-
-Developed with Unreal Engine 4.27 
-
-
-    
 <!DOCTYPE html>
 <html>
  <head>
@@ -30,9 +24,3 @@ Developed with Unreal Engine 4.27
  </body>
 </html>
 
-<h1 align="center">Привет! Меня зовут Алексей и это первый мой проект на Unreal Engine
-<img src="https://github.com/blackcater/blackcater/raw/main/images/Hi.gif" height="32"/></h1>
-<h2 align="left">Что мне удалось реализовать в этом проекте?</h2>
-<ul>
-<li>Прицеливание</li>
-</ul>
