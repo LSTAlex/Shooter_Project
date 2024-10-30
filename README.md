@@ -10,4 +10,5 @@ Developed with Unreal Engine 4.27
 <div style="text-align: center;">
 <img src="Content/Img/Прицеливание.png" height="512"/>
 </div>
+<li>Прицеливание <br /></li>
 </ul>
