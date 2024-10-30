@@ -6,8 +6,8 @@ Developed with Unreal Engine 4.27
 <img src="https://github.com/blackcater/blackcater/raw/main/images/Hi.gif" height="32"/></h1>
 <h2 align="left">Что мне удалось реализовать в этом проекте?</h2>
 <ul>
-<li>Прицеливание <br />
+<li>Прицеливание <br /></li>
 <div style="text-align: center;">
-<img src="Content/Img/Прицеливание.png" height="512"/></li>
+<img src="Content/Img/Прицеливание.png" height="512"/>
 </div>
 </ul>
