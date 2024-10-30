@@ -7,5 +7,5 @@ Developed with Unreal Engine 4.27
 <h2 align="left">Что мне удалось реализовать в этом проекте?</h2>
 <ul>
 <li>Прицеливание
-<img src="C:\Download\Прицеливание.png" height="32"/></li>
+<img src="Прицеливание.png" height="32"/></li>
 </ul>
