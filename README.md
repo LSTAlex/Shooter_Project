@@ -44,7 +44,7 @@ Developed with Unreal Engine 4.27
         </div>
     <li> Патрулирование точек противником <br /></li>
         <div style="text-align: center;">
-            <img src="Content/Img/патрулирование.png" height="322"/>
+            <img src="Content/Img/патрулирование.png" height="200"/>
         </div>
     <li> Атака противником <br /></li>
         <div style="text-align: center;">
