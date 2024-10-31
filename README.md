@@ -20,7 +20,7 @@ Developed with Unreal Engine 4.27
         </div>
     <li>Редкость предметов <br /></li>
         <div style="text-align: center;">
-            <img src="Content/Img/Редкость оружия.png" height="512"/>
+            <img src="Content/Img/Редкость оружия.png" height="320"/>
         </div>
     <li>Нанесение урона с виджетом отображения <br /></li>
         <div style="text-align: center;">
@@ -32,7 +32,7 @@ Developed with Unreal Engine 4.27
         </div>
     <li>Виджет здоровя персонажа <br /></li>
         <div style="text-align: center;">
-            <img src="Content/Img/Виджет здоровья персонажа.png" height="512"/>
+            <img src="Content/Img/Виджет здоровья персонажа.png" height="72"/>
         </div>
     <li> Инвентарь <br /></li>
         <div style="text-align: center;">
@@ -44,7 +44,7 @@ Developed with Unreal Engine 4.27
         </div>
     <li> Патрулирование точек противником <br /></li>
         <div style="text-align: center;">
-            <img src="Content/Img/патрулирование.png" height="512"/>
+            <img src="Content/Img/патрулирование.png" height="322"/>
         </div>
     <li> Атака противником <br /></li>
         <div style="text-align: center;">
